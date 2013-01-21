@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>hsn2-framework</artifactId>
+    <groupId>pl.nask.hsn2</groupId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>pl.nask.hsn2</groupId>
+  <artifactId>hsn2-git-workflow-repo</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <name>HSN2 Framework :: Workflow :: Git Repository</name>
+  
+<repositories>
+    <repository>
+      <id>jgit-repository</id>
+      <url>http://download.eclipse.org/jgit/maven</url>
+    </repository>
+  </repositories>
+  
+  <dependencies>
+  <dependency>
+      <groupId>pl.nask.hsn2</groupId>
+      <artifactId>hsn2-core-api</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+    </dependency>
+  
+    <dependency>
+      <groupId>org.eclipse.jgit</groupId>
+      <artifactId>org.eclipse.jgit</artifactId>
+      <version>1.3.0.201202151440-r</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>commons-io</groupId>
+    	<artifactId>commons-io</artifactId>
+    	<version>2.0.1</version>
+    </dependency>
+  </dependencies>
+</project>

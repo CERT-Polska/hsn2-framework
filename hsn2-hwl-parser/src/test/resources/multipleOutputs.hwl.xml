@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<workflow>
+	<process id="main">
+		<service name="feeder">			
+			<output process="process_url" expr="true"/>
+			<output process="feeder" />
+		</service>		
+	</process>
+	
+	<process id="process_url">		
+		<service name="crawler" />					
+	</process>
+</workflow>

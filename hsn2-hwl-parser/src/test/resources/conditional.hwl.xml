@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflow>
+	<process id="main">
+		<conditional expr="this.depth > 9">
+			<true>
+				<service name="crawler" />
+			</true>
+			<false>
+				<service name="crawler2" />
+			</false>
+		</conditional>
+	</process>
+</workflow>

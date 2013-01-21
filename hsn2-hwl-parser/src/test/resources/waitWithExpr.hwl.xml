@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<workflow>
+	<process id="main">
+		<service name="feeder" />			
+		<wait expr="true"/>		
+	</process>
+
+</workflow>

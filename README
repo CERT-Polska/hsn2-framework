@@ -1,0 +1,16 @@
+Installation
+------------
+
+If you don't have installed Java yet, install it from official Derbian repository.
+Install jzmq-bundle on your system. After installation you have full support 
+for ZeroMQ with Java.
+Unpack hsn2-main archive. 
+
+Launching
+---------
+
+Run hsn2-framework.jar using java -jar command with -Djava.library.path option
+to set zmq library location.
+For example:
+
+java -Djava.library.path=/usr/local/lib -jar hsn2-framework.jar

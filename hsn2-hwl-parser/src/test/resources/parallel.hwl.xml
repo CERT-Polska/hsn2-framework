@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<workflow>
+	<process id="main">
+		<parallel>
+			<thread>
+				<service name="analyzer1" />
+			</thread>
+			<thread>
+				<service name="analyzer2" />
+			</thread>
+		</parallel>
+	</process>
+</workflow>

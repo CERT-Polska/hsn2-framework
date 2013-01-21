@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<workflow name="single">
+	<process id="main">
+		<script>
+			url_original = "http://www.cert.pl/"
+		</script>
+		<service name="webclient" id="webclient_init">
+			<parameter name="link_limit">10</parameter>
+			<output process="url" />
+		</service>
+	</process>
+
+	<process id="url">
+		<service name="webclient" id="webclient_init2">
+			<output process="end" />
+			<parameter name="link_limit">10</parameter>
+		</service>
+	</process>
+
+	<process id="end">
+		<service name="webclient" id="webclient_init2" ignore_errors="DEFUNCT DATA_STORE">
+			<parameter name="link_limit">10</parameter>
+		</service>
+	</process>
+</workflow>

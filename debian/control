@@ -1,0 +1,8 @@
+Package: hsn2-framework
+Version: {VER}
+Section: unknown
+Priority: optional
+Architecture: all
+Maintainer: Juliusz Brzostek (juliusz.brzostek@cert.pl)
+Description: HSN2 Framework Component.
+Distribution: {DEBIAN_DIST}

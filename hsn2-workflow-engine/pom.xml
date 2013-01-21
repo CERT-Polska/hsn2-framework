@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>hsn2-framework</artifactId>
+    <groupId>pl.nask.hsn2</groupId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>pl.nask.hsn2</groupId>
+  <artifactId>hsn2-workflow-engine</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <name>HSN2 Framework :: Workflow :: Engine</name>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.activiti</groupId>
+      <artifactId>activiti-engine</artifactId>      
+    </dependency>
+    <dependency>
+    	<groupId>pl.nask.hsn2</groupId>
+    	<artifactId>hsn2-core-api</artifactId>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.commons</groupId>
+    	<artifactId>commons-ognl</artifactId>
+    	<version>4.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.activiti</groupId>
+				<artifactId>activiti-engine</artifactId>
+				<version>5.5</version>
+				<exclusions>
+					<!-- since we only use activiti pvm engine the following dependencies 
+						will are not needed -->
+					<exclusion>
+						<groupId>org.mybatis</groupId>
+						<artifactId>mybatis</artifactId>
+					</exclusion>
+					<!-- no spring integration is used as well -->
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-beans</artifactId>
+					</exclusion>
+					<!-- and no emails are send -->
+					<exclusion>
+						<groupId>org.apache.commons</groupId>
+						<artifactId>commons-email</artifactId>
+					</exclusion>
+					<!-- no plans for using jsr223 -->
+					<exclusion>
+						<groupId>org.livetribe</groupId>
+						<artifactId>livetribe-jsr223</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>

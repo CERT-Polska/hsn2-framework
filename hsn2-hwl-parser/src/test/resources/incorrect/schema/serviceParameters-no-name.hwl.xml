@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<workflow>
+	<process id="main">
+		<service name="crawler">
+			<parameter>HTML</parameter>
+		</service>
+	</process>
+</workflow>

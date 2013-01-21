@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<workflow>
+	<description>Simple description</description>
+	<process id="main">
+		<script>true</script>							
+	</process>	
+</workflow>
