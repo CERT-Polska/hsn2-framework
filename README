@@ -1,16 +1,14 @@
-Installation
-------------
+HSN2 Framework (hsn2-framework)
 
-If you don't have installed Java yet, install it from official Derbian repository.
-Install jzmq-bundle on your system. After installation you have full support 
-for ZeroMQ with Java.
-Unpack hsn2-main archive. 
 
-Launching
----------
+HSN2 Framework is a core of the system. It allows all services to process jobs in a managed
+way (using a workflow engine) and provides the communication mechanism
+(message bus) for all system components.
 
-Run hsn2-framework.jar using java -jar command with -Djava.library.path option
-to set zmq library location.
-For example:
 
-java -Djava.library.path=/usr/local/lib -jar hsn2-framework.jar
+
+
+This repository is a part of bigger project: Honeyspider Network 2.0.
+Project bundle is located at: https://github.com/CERT-Polska/hsn2-bundle.
+More information is available on the project website:
+http://www.honeyspider.net
