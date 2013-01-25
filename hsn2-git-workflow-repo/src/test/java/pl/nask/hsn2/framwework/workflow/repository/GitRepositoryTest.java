@@ -44,106 +44,103 @@ import pl.nask.hsn2.framework.workflow.repository.WorkflowVersionInfo;
 public class GitRepositoryTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepositoryTest.class);
-	
-    String repoDir = "test-git-repo";
+	String repoDir = System.getProperty("java.io.tmpdir") + "test-git-repo";
+	GitWorkflowRepository repo;
+	String WORKFLOW_NAME = "newTestFile";
+	String testInput2 = "test input 2";
+	String testInput = "test input";
 
-    GitWorkflowRepository repo;
+	@BeforeTest
+	public void initRepo() throws WorkflowRepoException, IOException {
+		File r = new File(repoDir);
+		FileUtils.deleteDirectory(r);
+		repo = new GitWorkflowRepository(repoDir, true);
+	}
 
-    String WORKFLOW_NAME = "newTestFile";
-    String testInput2 = "test input 2";
-    String testInput = "test input";
+	@AfterTest
+	public void removeRepo() throws IOException {
+		File r = new File(repoDir);
+		FileUtils.deleteDirectory(r);
+	}
 
-    @BeforeTest
-    public void initRepo() throws WorkflowRepoException, IOException {
-        File r = new File(repoDir);
-        FileUtils.deleteDirectory(r);
-        repo = new GitWorkflowRepository(repoDir, true);
-    }
+	@Test
+	public void saveNewWorkflow() throws WorkflowRepoException {
+		LOGGER.info("saving workflow...");
+		StringReader reader = new StringReader(testInput);
+		InputStream is = new ReaderInputStream(reader);
+		repo.saveWorkflow(WORKFLOW_NAME, is);
+		Assert.assertTrue(fileExists(WORKFLOW_NAME));
+	}
 
-    @AfterTest
-    public void removeRepo() throws IOException {
-        File r = new File(repoDir);
-        FileUtils.deleteDirectory(r);
-    }
+	@Test(dependsOnMethods = "saveNewWorkflow")
+	public void updateNewWorkflow() throws WorkflowRepoException, InterruptedException {
+		LOGGER.info("updating workflow...");
+		StringReader reader = new StringReader(testInput2);
+		InputStream is = new ReaderInputStream(reader);
+		repo.saveWorkflow(WORKFLOW_NAME, is);
+		Assert.assertTrue(fileExists(WORKFLOW_NAME));
+	}
 
-    @Test
-    public void saveNewWorkflow() throws WorkflowRepoException {
-    	LOGGER.info("saving workflow...");
-        StringReader reader = new StringReader(testInput);
-        InputStream is = new ReaderInputStream(reader);
-        repo.saveWorkflow(WORKFLOW_NAME, is);
-        Assert.assertTrue(fileExists(WORKFLOW_NAME));
-    }
+	@Test(dependsOnMethods = "updateNewWorkflow")
+	public void listWorkflowsTest() throws IOException, WorkflowRepoException {
+		LOGGER.info("listing workflows...");
 
-    @Test(dependsOnMethods="saveNewWorkflow")
-    public void updateNewWorkflow() throws WorkflowRepoException, InterruptedException {
-    	LOGGER.info("updating workflow...");
-        StringReader reader = new StringReader(testInput2);
-        InputStream is = new ReaderInputStream(reader);
-        repo.saveWorkflow(WORKFLOW_NAME, is);
-        Assert.assertTrue(fileExists(WORKFLOW_NAME));
-    }
+		// creating file not under git management
+		FileWriter f = new FileWriter(new File(repoDir, "unexpectedFile"));
+		f.write("sadsadasfas");
+		f.close();
 
-    @Test(dependsOnMethods="updateNewWorkflow")
-    public void listWorkflowsTest() throws IOException, WorkflowRepoException {
-    	LOGGER.info("listing workflows...");
-    	
-    	// creating file not under git management
-    	FileWriter f = new FileWriter(new File(repoDir, "unexpectedFile"));
-    	f.write("sadsadasfas");
-    	f.close();
-    	
-        List<String> list = repo.listWorkflowNames();
-        Assert.assertFalse(list.contains(".git"));
-        Assert.assertTrue(list.contains(WORKFLOW_NAME));
-        for (String fileName : list) {
-        	LOGGER.info("found file:{}", fileName);
-        }
-        Assert.assertEquals(list.size(), 1);
-        Assert.assertEquals(list.get(0), WORKFLOW_NAME);
-    }
+		List<String> list = repo.listWorkflowNames();
+		Assert.assertFalse(list.contains(".git"));
+		Assert.assertTrue(list.contains(WORKFLOW_NAME));
+		for (String fileName : list) {
+			LOGGER.info("found file:{}", fileName);
+		}
+		Assert.assertEquals(list.size(), 1);
+		Assert.assertEquals(list.get(0), WORKFLOW_NAME);
+	}
 
-    @Test(dependsOnMethods="updateNewWorkflow")
-    public void getWorkflowFileHead() throws IOException, WorkflowRepoException {
-        InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, null);
-        Assert.assertNotNull(is);
-        assertSameAs(testInput2, is);
-    }
+	@Test(dependsOnMethods = "updateNewWorkflow")
+	public void getWorkflowFileHead() throws IOException, WorkflowRepoException {
+		InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, null);
+		Assert.assertNotNull(is);
+		assertSameAs(testInput2, is);
+	}
 
-    @Test(dependsOnMethods={"updateNewWorkflow", "getVersions"})
-    public void getWorkflowFileVersion1() throws IOException, WorkflowRepoException {
-        List<WorkflowVersionInfo> versions = repo.getVersions(WORKFLOW_NAME);
-        InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, versions.get(0).getVersion()); // same as head!
-        assertSameAs(testInput2, is);
-    }
+	@Test(dependsOnMethods = { "updateNewWorkflow", "getVersions" })
+	public void getWorkflowFileVersion1() throws IOException, WorkflowRepoException {
+		List<WorkflowVersionInfo> versions = repo.getVersions(WORKFLOW_NAME);
+		InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, versions.get(0).getVersion()); // same as head!
+		assertSameAs(testInput2, is);
+	}
 
-    @Test(dependsOnMethods={"updateNewWorkflow", "getVersions"})
-    public void getWorkflowFileVersion2() throws IOException, WorkflowRepoException {
-        List<WorkflowVersionInfo> versions = repo.getVersions(WORKFLOW_NAME);
-        InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, versions.get(1).getVersion()); // same as head!
-        assertSameAs(testInput, is);
-    }
+	@Test(dependsOnMethods = { "updateNewWorkflow", "getVersions" })
+	public void getWorkflowFileVersion2() throws IOException, WorkflowRepoException {
+		List<WorkflowVersionInfo> versions = repo.getVersions(WORKFLOW_NAME);
+		InputStream is = repo.getWorkflowFile(WORKFLOW_NAME, versions.get(1).getVersion()); // same as head!
+		assertSameAs(testInput, is);
+	}
 
-    private void assertSameAs(String expected, InputStream is) throws IOException {
-        try {
-            String content = IOUtils.toString(is);
-            Assert.assertEquals(expected, content);
-        } finally {
-            is.close();
-        }
-    }
+	private void assertSameAs(String expected, InputStream is) throws IOException {
+		try {
+			String content = IOUtils.toString(is);
+			Assert.assertEquals(expected, content);
+		} finally {
+			is.close();
+		}
+	}
 
-    @Test(dependsOnMethods="updateNewWorkflow")
-    public void getVersions() throws WorkflowRepoException {
-        List<WorkflowVersionInfo> versions = repo.getVersions("newTestFile");
-        Assert.assertNotNull(versions);
-        Assert.assertEquals(2, versions.size());
-        for (WorkflowVersionInfo info : versions) {
-        	LOGGER.info("rev={}, ts={}", info.getVersion(), info.getVersionTimestamp());
-        }
-    }
+	@Test(dependsOnMethods = "updateNewWorkflow")
+	public void getVersions() throws WorkflowRepoException {
+		List<WorkflowVersionInfo> versions = repo.getVersions("newTestFile");
+		Assert.assertNotNull(versions);
+		Assert.assertEquals(2, versions.size());
+		for (WorkflowVersionInfo info : versions) {
+			LOGGER.info("rev={}, ts={}", info.getVersion(), info.getVersionTimestamp());
+		}
+	}
 
-    private boolean fileExists(String name) {
-        return new File(repoDir, name).exists();
-    }
+	private boolean fileExists(String name) {
+		return new File(repoDir, name).exists();
+	}
 }
