@@ -44,7 +44,7 @@ import pl.nask.hsn2.framework.workflow.repository.WorkflowVersionInfo;
 public class GitRepositoryTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GitRepositoryTest.class);
-	String repoDir = System.getProperty("java.io.tmpdir") + "test-git-repo";
+	String repoDir = removeEndingFileSeparator(System.getProperty("java.io.tmpdir")) + "/test-git-repo";
 	GitWorkflowRepository repo;
 	String WORKFLOW_NAME = "newTestFile";
 	String testInput2 = "test input 2";
@@ -61,6 +61,18 @@ public class GitRepositoryTest {
 	public void removeRepo() throws IOException {
 		File r = new File(repoDir);
 		FileUtils.deleteDirectory(r);
+	}
+
+	private String removeEndingFileSeparator(String pathToCheck) {
+		String fileSeparator = System.getProperty("file.separator");
+		String lastPathChar = "" + pathToCheck.charAt(pathToCheck.length() - 1);
+		String result;
+		if (fileSeparator.equals(lastPathChar)) {
+			result = pathToCheck.substring(0, pathToCheck.length() - 1);
+		} else {
+			result = pathToCheck;
+		}
+		return result;
 	}
 
 	@Test
