@@ -41,6 +41,8 @@ public class RbtBusConfiguration {
 	private String amqpExchangeMonitoringName = "notify";
 	private String amqpExchangeCommonName = "main";
 	private String amqpExchangeServicesName = "direct";
+	
+	private int amqpConsumersNumber = 10;
 
 	public String getAmqpExchangeMonitoringName() {
 		return amqpExchangeMonitoringName;
@@ -116,6 +118,24 @@ public class RbtBusConfiguration {
 	public RbtBusConfiguration setOsHiQueueName(String queueName) {
 		this.osHiQueueName = queueName;
 		return this;
+	}
+
+	public RbtBusConfiguration setAmqpConsumersNumber(String consumersNumberTextValue) {
+		if (consumersNumberTextValue != null && !consumersNumberTextValue.isEmpty()) {
+			try {
+				this.amqpConsumersNumber = Integer.valueOf(consumersNumberTextValue);
+				if (this.amqpConsumersNumber < 1) {
+					throw new IllegalArgumentException("Consumers number has to be positive number");
+				}
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Consumers number has to be positive number");
+			}
+		}
+		return this;
+	}
+
+	public int getAmqpConsumersNumber() {
+		return amqpConsumersNumber;
 	}
 
 	public String getAMQPServerAddress() {
