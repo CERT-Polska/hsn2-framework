@@ -19,6 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,22 +40,28 @@ import pl.nask.hsn2.framework.configuration.validation.ValidatorFactory;
 
 public class ConfigurationManagerImpl implements ConfigurationManager {
 
-    private static final String DEFAULT_CONFIG = "defaultConfig.cfg";
+	/**
+	 * Default config file name. Used when no user config is found.
+	 */
+	private static final String DEFAULT_CONFIG = "defaultConfig.cfg";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationManager.class);
+	/**
+	 * Default user config file name.
+	 */
+	private static final String DEFAULT_CONFIG_FILENAME = "config.cfg";
 
-    private Map<String, List<Validator>> validators;
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationManager.class);
 
-    private Configuration configuration;
+	private Map<String, List<Validator>> validators;
 
-    private org.apache.commons.configuration.Configuration internalDefaultConfig;
-    private org.apache.commons.configuration.Configuration internalUserConfig = new CompositeConfiguration();
+	private Configuration configuration;
 
-    private ConfigurationReader<PropertiesConfiguration> parser = new ApacheConfigurationParser();
+	private org.apache.commons.configuration.Configuration internalDefaultConfig;
+	private org.apache.commons.configuration.Configuration internalUserConfig = new CompositeConfiguration();
 
-    private static final String DEFAULT_CONFIG_FILENAME = "config.cfg";
+	private ConfigurationReader<PropertiesConfiguration> parser = new ApacheConfigurationParser();
 
-    private static final String VALIDATORS_CONFIG_FILENAME = "validation.cfg";
+	private static final String VALIDATORS_CONFIG_FILENAME = "validation.cfg";
 
     public ConfigurationManagerImpl() throws FileNotFoundException, IOException, ConfigurationException, ValidationException {
         // load validators config
@@ -100,13 +107,15 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
 
     @Override
     public void reloadConfig() throws ConfigurationException, ValidationException, MappingException {
+    	LOGGER.info("No configuration file name provided. Trying default user configuration file first.");
         reloadConfig(DEFAULT_CONFIG_FILENAME);
     }
 
     @Override
     public void reloadConfig(String filePath) throws ConfigurationException, ValidationException, MappingException {
+    	File file = new File(filePath);
         initValidators();
-        LOGGER.info("Reloading configuration");
+        LOGGER.info("Reloading configuration from: " + file.getAbsolutePath());
         try {
             org.apache.commons.configuration.Configuration cfg = parser.parse(filePath);
             internalUserConfig = cfg;
@@ -118,9 +127,9 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
             Configuration newConfig = new Configuration(internalDefaultConfig, null);
             validateConfiguration(newConfig.getInternalConfiguration());
             this.configuration = newConfig;
-            LOGGER.warn("User configuration file not found: {}", filePath);
+            LOGGER.warn("User configuration file not found. Using default configuration.");
         } catch (IOException e) {
-            throw new ConfigurationException("Error reading input for file " + filePath, e);
+            throw new ConfigurationException("Error reading input for file " + file.getAbsolutePath(), e);
         }
         LOGGER.info("Current configuration is: \n{}", configuration);
     }
