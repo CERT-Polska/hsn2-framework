@@ -227,7 +227,8 @@ public class Main {
 	    	.setOsHiQueueName(cfg.getAMQPObjectStoreQueueHigh())
 	    	.setAmqpExchangeCommonName(cfg.getAMQPExchangeCommon())
 	    	.setAmqpExchangeMonitoringName(cfg.getAMQPExchangeMonitoring())
-	    	.setAmqpExchangeServicesName(cfg.getAMQPExchangeServices());
+	    	.setAmqpExchangeServicesName(cfg.getAMQPExchangeServices())
+	    	.setAmqpConsumersNumber(cfg.getAMQPConsumersNumber());
 
 
 	    rbtBus = new RbtFrameworkBus(busConfig);

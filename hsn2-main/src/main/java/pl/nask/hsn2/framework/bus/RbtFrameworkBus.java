@@ -97,14 +97,13 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 	}
 
 	private void setup() throws BusException {
-		
 		this.endPointFactory
-			.setNumberOfconsumerThreads(10)
+			.setNumberOfconsumerThreads(config.getAmqpConsumersNumber())
 			.setServerAddress(config.getAMQPServerAddress())
 			.reconnect();
-		
+
 		List<String> queues = new LinkedList<String>();
-		
+
 		// Declarations of exchanges and bindings between them
 		String exchangeMonitoringName = config.getAmqpExchangeMonitoringName();
 		String exchangeCommonName = config.getAmqpExchangeCommonName();
@@ -127,11 +126,11 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 		// deadletter queue
 		queues.add("deadletter");
-		
+
 		LOGGER.debug("Creating queues: {}", queues);
 		RbtUtils.createQueues(endPointFactory.getConnection(), exchangeServicesName, queues.toArray(new String[queues.size()]), true);
 	}
-	
+
 	@Override
 	public void start() throws BusException {
 		
