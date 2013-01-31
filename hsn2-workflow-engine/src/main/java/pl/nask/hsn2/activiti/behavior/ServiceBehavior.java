@@ -30,6 +30,7 @@ import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.nask.hsn2.activiti.suppressor.TasksSuppressor;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.process.ProcessConnectorException;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
@@ -69,7 +70,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
     @Override
     public void execute(ActivityExecution execution) {
         LOGGER.debug("Executing activity {}", execution.getActivity().getId());
-        LOGGER.debug("Send a message to a service with name {}", serviceName);
+        //LOGGER.debug("Send a message to a service with name {}", serviceName);
         ExecutionWrapper wrapper = new ExecutionWrapper(execution);
 
         Long jobId = wrapper.getJobId();
@@ -77,20 +78,20 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
             throw new IllegalStateException("No job_id found for the execution: " + execution);
         }
 
+        /*
         int taskId = wrapper.setNewTaskId();
 
         // FIXME: we have a race here! WorkflowJob instances should be synchronized.
 
         // TODO: refactor me!
-        try {
-			Properties params = ServiceParam.merge(
-					serviceParameters,
-					wrapper.getUserConfig().get(serviceLabel),
-					true);
-        	SubprocessParameters processParams = wrapper.getSubprocessParameters();
-        	long objectId = (processParams!=null) ? processParams.getObjectDataId() : 0L;
-			((FrameworkBus)BusManager.getBus()).getProcessConnector().sendTaskRequest(serviceName, serviceLabel, jobId,
-					taskId, objectId, params);
+		Properties params = ServiceParam.merge(
+				serviceParameters,
+				wrapper.getUserConfig().get(serviceLabel),
+				true);
+    	SubprocessParameters processParams = wrapper.getSubprocessParameters();
+    	long objectId = (processParams!=null) ? processParams.getObjectDataId() : 0L;
+    	try {
+			((FrameworkBus)BusManager.getBus()).getProcessConnector().sendTaskRequest(serviceName, serviceLabel, jobId, taskId, objectId, params);
         } catch (ProcessConnectorException e) {
             LOGGER.error(e.getMessage(), e);
             System.exit(1); //TODO: doggy! fix it ASAP! Maybe internal TaskError operation?
@@ -100,12 +101,17 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
             stats.taskStarted(serviceName);
         }
         LOGGER.debug("message sent to a service with name {}", serviceName);
+    	 */
+        
+        wrapper.getProcessContext().getTasksSuppressor().addTaskRequest(serviceName, serviceLabel, wrapper, serviceParameters);
     }
 
     @Override
     public void signal(ActivityExecution execution, String signalName, Object signalData) throws EvaluationException {
         // TODO: inactive executions should not process the signal. the signal should be passed to the subprocess instead.
         // TODO: all signals should be passed to subexecutions?
+    	
+    	TasksSuppressor tasksSuppressor = new ExecutionWrapper(execution).getProcessContext().getTasksSuppressor();
     	
         LOGGER.debug("activity: {}", execution.getActivity().getId());
         LOGGER.debug("got signal: {} with data: {}", signalName, signalData);
@@ -114,10 +120,12 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         }
         if ("completeTask".equalsIgnoreCase(signalName)) {
             completeTask(execution, signalData);
+            tasksSuppressor.signalTaskCompletion();
         } else if ("subprocess".equalsIgnoreCase(signalName)) {
             runSubprocesses(execution, signalData);
         } else if ("taskFailed".equalsIgnoreCase(signalName)) {
         	handleTaskFailed(execution,(Object [])signalData);
+        	tasksSuppressor.signalTaskCompletion();
         } else {
             LOGGER.debug("Unknown signal name, ignore: {}",signalName);
         }

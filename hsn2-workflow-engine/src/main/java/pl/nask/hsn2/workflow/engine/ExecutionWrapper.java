@@ -30,6 +30,7 @@ import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.activiti.engine.impl.pvm.runtime.ExecutionImpl;
 
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
+import pl.nask.hsn2.activiti.suppressor.TasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 
@@ -68,7 +69,10 @@ public final class ExecutionWrapper {
         if (getProcessContext() != null)
             throw new IllegalStateException("Process variables are already initialized");
         
-        ProcessContext subprocessContext = new ProcessContext(jobId, userConfig, new SubprocessParameters(wdf, objectId), stats);
+        // WST parametrize max running tasks number (10 below)
+        TasksSuppressor ts = new TasksSuppressor(jobId, 10);
+        ts.start();
+        ProcessContext subprocessContext = new ProcessContext(jobId, userConfig, new SubprocessParameters(wdf, objectId), stats, ts);
         pvmExecution.setVariable(PROCESS_CONTEXT, subprocessContext);
     }
     

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
 import pl.nask.hsn2.activiti.behavior.FatalTaskErrorException;
 import pl.nask.hsn2.activiti.behavior.HSNBehavior;
+import pl.nask.hsn2.activiti.suppressor.TasksSuppressor;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
 import pl.nask.hsn2.bus.operations.JobStatus;
