@@ -52,6 +52,7 @@ import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 import pl.nask.hsn2.framework.workflow.repository.GitWorkflowRepository;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowDefinitionManager;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
@@ -81,7 +82,7 @@ public class FullExampleTest {
     @Test(dependsOnMethods="parseFullExample")
     public void registerFullExampleWorkflow() throws WorkflowSyntaxException, WorkflowParseException, WorkflowRepoException, FileNotFoundException {
         WorkflowManager.setWorkflowRepository(new GitWorkflowRepository("target/git-repo/", true));
-        WorkflowManager.setWorkflowEngine(new ActivitiWorkflowEngine(new AtomicLongIdGenerator()));
+        WorkflowManager.setWorkflowEngine(new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1));
         InputStream is = new FileInputStream("fullExample.hwl.xml");
         Assert.assertNotNull("InputStream is null. Again.", is);
         WorkflowManager.getInstance().uploadWorkflow("workflow-1", is, true);
@@ -102,7 +103,7 @@ public class FullExampleTest {
     }
     
     public static class MyBus implements FrameworkBus {
-        private int lastTaskId = -1;
+        //private int lastTaskId = -1;
         private ObjectStoreConnector objectStoreConnector = new StubObjectStoreConnector(){
         	@Override
 			public Long sendObjectStoreData(long jobId, ObjectData dataList)

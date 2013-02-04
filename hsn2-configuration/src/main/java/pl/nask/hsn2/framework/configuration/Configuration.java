@@ -121,6 +121,18 @@ public class Configuration {
 	public String getAMQPConsumersNumber() {
 		return internalConfiguration.getString("AMQP.consumers.number");
 	}
+	
+	public int getJobsSuppressorTasksThreshold() throws ConfigurationException {
+		try {
+			int number = Integer.parseInt(internalConfiguration.getString("jobs.suppressor.tasks.threshold"));
+			if (number < 1) {
+				throw new ConfigurationException("Illegal 'jobs.suppressor.tasks.threshold' value. Has to be positive number.");
+			}
+			return number;
+		} catch (NumberFormatException e) {
+			throw new ConfigurationException("Cannot parse 'jobs.suppressor.tasks.threshold' value. Has to be positive number.", e);
+		}
+	}
 
 	org.apache.commons.configuration.Configuration getInternalConfiguration() {
 		return internalConfiguration;

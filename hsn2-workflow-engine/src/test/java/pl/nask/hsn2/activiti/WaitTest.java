@@ -35,6 +35,8 @@ import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
+import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 public class WaitTest extends AbstractActivitiTest {
@@ -122,7 +124,8 @@ public class WaitTest extends AbstractActivitiTest {
         PvmProcessDefinition mainDef = registry.getDefinition("main");
         PvmProcessInstance instance = mainDef.createProcessInstance();
         ExecutionWrapper instanceWrapper = new ExecutionWrapper(instance);
-        instanceWrapper.initProcessState(0);
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(0, 100, new SingleThreadTasksSuppressor());
+        instanceWrapper.initProcessState(0, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         return instance;

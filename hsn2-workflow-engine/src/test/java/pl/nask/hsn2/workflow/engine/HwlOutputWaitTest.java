@@ -41,6 +41,7 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 @Test(enabled=true)
@@ -57,10 +58,11 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
 	public void prepareTest() {
 		myBus.requests.clear();
 	}
-	
+
     public void serviceWithSimpleOutput() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition(null);
-    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
     	WorkflowJobInfo jobInfo = engine.getJobInfo(jobId);    	
@@ -68,14 +70,14 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
     	// trigger creation of a subprocess
-    	TaskRequest req = myBus.requests.remove(0);
+    	TaskRequest req = myBus.requests.take();
     	int taskId = req.getTaskId();
     	engine.taskCompleted(jobId, taskId, Collections.singleton(1000L));
         // subprocesses should be created
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 1, "one subprocess should be running");
     	
         // terminate subprocess
-    	req = myBus.requests.remove(0);
+    	req = myBus.requests.take();
     	engine.taskCompleted(jobId, req.getTaskId(), null);
         Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
@@ -85,7 +87,8 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
 
     public void recursiveOutput() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition(null);
-    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
     	WorkflowJobInfo jobInfo = engine.getJobInfo(jobId);    	
@@ -93,21 +96,21 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
     	// trigger creation of a subproces
-    	TaskRequest req = myBus.requests.remove(0);
+    	TaskRequest req = myBus.requests.take();
     	int taskId = req.getTaskId();
     	engine.taskCompleted(jobId, taskId, Collections.singleton(1000L));
         // subprocesses should be created
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 1, "one subprocess should be running");
     	
     	// trigger creation of sub-subprocess
-    	req = myBus.requests.remove(0);
+    	req = myBus.requests.take();
     	taskId = req.getTaskId();
     	engine.taskCompleted(jobId, taskId, Collections.singleton(1001L));
         // subprocess should be created
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 2, "2 subprocesses should be running");
     	
         // terminate subprocess
-    	req = myBus.requests.remove(0);
+    	req = myBus.requests.take();
     	engine.taskCompleted(jobId, req.getTaskId(), null);
         Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
@@ -116,7 +119,8 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     
     public void outputConditionFalse() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition("id==1000");
-    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
     	WorkflowJobInfo jobInfo = engine.getJobInfo(jobId);    	
@@ -127,7 +131,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     	obj.setId(1001L);
 		myBus.addObject(1001L, obj );
     	// trigger creaction of a subproces
-    	TaskRequest req = myBus.requests.remove(0);
+    	TaskRequest req = myBus.requests.take();
     	int taskId = req.getTaskId();
     	engine.taskCompleted(jobId, taskId, Collections.singleton(1001L));
         // subprocesses should be created
@@ -138,7 +142,8 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     
     public void outputConditionTrue() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition("id==1000");
-    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
     	WorkflowJobInfo jobInfo = engine.getJobInfo(jobId);    	
@@ -146,7 +151,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
     	// trigger creaction of a subproces
-    	TaskRequest req = myBus.requests.remove(0);
+    	TaskRequest req = myBus.requests.take();
     	ObjectData obj = new ObjectData();
     	obj.setId(1000L);
 		myBus.addObject(1000L, obj );
@@ -156,13 +161,13 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     	Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 1, "output condition should resolve to true, so one process should be created");
     	
         // terminate subprocess
-    	req = myBus.requests.remove(0);
+    	req = myBus.requests.take();
     	engine.taskCompleted(jobId, req.getTaskId(), null);
         Assert.assertEquals(jobInfo.getActiveSubtasksCount(), 0, "job shoud have no subprocesses running");
         
         Assert.assertTrue(jobInfo.isEnded(), "job should be ended");                
     }   
-    
+
     private ProcessBasedWorkflowDescriptor<PvmProcessDefinition> buildWorkflowDefinition(String conditionForOutput) {
             ProcessDefinition mainDef = new ProcessDefinition("main");
             Service mainService = new Service("mainService");

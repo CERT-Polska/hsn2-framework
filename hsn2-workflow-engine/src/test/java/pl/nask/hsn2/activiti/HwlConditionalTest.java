@@ -31,6 +31,8 @@ import pl.nask.hsn2.framework.workflow.hwl.Conditional;
 import pl.nask.hsn2.framework.workflow.hwl.ExecutionFlow;
 import pl.nask.hsn2.framework.workflow.hwl.ExecutionPoint;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
+import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 @Test
@@ -40,7 +42,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("true", null, null);
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         // should already be in the 'end' state
@@ -52,7 +55,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("false", null, null);
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         // should already be in the 'end' state
@@ -64,7 +68,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("false", "trueService", "falseService");
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         // shall fall into 'false' branch - true is empty, so we can't have "condition-end"
@@ -77,7 +82,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("false", "trueService", null);
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         assertProcessState(instance, "condition-end-act-2");
@@ -88,7 +94,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("true", "trueService", null);
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         // shall fall into 'true' branch - false is empty, so we can't have "condition-end"
@@ -101,7 +108,8 @@ public class HwlConditionalTest extends AbstractActivitiTest {
         PvmProcessDefinition definition = createProcessWithCondition("true", null, "falseService");
         PvmProcessInstance instance = definition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        wrapper.initProcessState(1  );
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);
         assertProcessState(instance, "condition-end-act-2");
@@ -141,6 +149,4 @@ public class HwlConditionalTest extends AbstractActivitiTest {
             return null;
         }
     }
-
-
 }

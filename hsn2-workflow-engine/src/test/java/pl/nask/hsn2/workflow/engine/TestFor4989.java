@@ -19,8 +19,10 @@
 
 package pl.nask.hsn2.workflow.engine;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -35,6 +37,7 @@ import pl.nask.hsn2.activiti.BehaviorFactoryImpl;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
 import pl.nask.hsn2.bus.operations.JobStatus;
+import pl.nask.hsn2.bus.operations.TaskRequest;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowNotDeployedException;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
@@ -43,122 +46,133 @@ import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 /**
  * Test for bug #4989 (https://drotest4.nask.net.pl:3000/issues/4989)
- *
-<pre>
-ERROR - 2011-10-04 10:15:29,397 [CommandDispatcher] ERROR pl.nask.hsn2.framework.core.CommandDispatcher - Error executiong command
-java.lang.IllegalStateException: Execution for taskId=4 cannot be found. The task may be already completed.
-at pl.nask.hsn2.workflow.engine.ActivitiJob.newSubprocess(ActivitiJob.java:145)
-at pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine.newSubprocess(ActivitiWorkflowEngine.java:78)
-at pl.nask.hsn2.framework.core.WorkflowManager.newSubprocess(WorkflowManager.java:170)
-at pl.nask.hsn2.framework.core.commands.ObjectAddedCmd.doExecute(ObjectAddedCmd.java:46)
-at pl.nask.hsn2.framework.core.commands.AbstractCommand.execute(AbstractCommand.java:24)
-at pl.nask.hsn2.framework.core.CommandDispatcher.run(CommandDispatcher.java:30)
-at java.lang.Thread.run(Thread.java:679)
-
-I happens when system has more then one webclient.
-</pre>
-
- * Since there was only one worker thread, this is not a multithreading issue.
- * It can be reproduced by creating some subprocesses and completing their tasks, but in different order the subprocesses were created.
- *
+ * 
+ * <pre>
+ * ERROR - 2011-10-04 10:15:29,397 [CommandDispatcher] ERROR pl.nask.hsn2.framework.core.CommandDispatcher - Error executiong command
+ * java.lang.IllegalStateException: Execution for taskId=4 cannot be found. The task may be already completed.
+ * at pl.nask.hsn2.workflow.engine.ActivitiJob.newSubprocess(ActivitiJob.java:145)
+ * at pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine.newSubprocess(ActivitiWorkflowEngine.java:78)
+ * at pl.nask.hsn2.framework.core.WorkflowManager.newSubprocess(WorkflowManager.java:170)
+ * at pl.nask.hsn2.framework.core.commands.ObjectAddedCmd.doExecute(ObjectAddedCmd.java:46)
+ * at pl.nask.hsn2.framework.core.commands.AbstractCommand.execute(AbstractCommand.java:24)
+ * at pl.nask.hsn2.framework.core.CommandDispatcher.run(CommandDispatcher.java:30)
+ * at java.lang.Thread.run(Thread.java:679)
+ * 
+ * I happens when system has more then one webclient.
+ * </pre>
+ * 
+ * Since there was only one worker thread, this is not a multithreading issue. It can be reproduced by creating some
+ * subprocesses and completing their tasks, but in different order the subprocesses were created.
+ * 
  */
 public class TestFor4989 {
-	
-    ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflowDefinitionDescriptorImpl;
-    
-    MockedBus myBus = new MockedBus();
-    
-    @BeforeClass
-    public void before() throws ObjectStoreConnectorException {
-        ProcessDefinition mainDef = new ProcessDefinition("main");
-        Service mainService = new Service("mainService");
-        mainService.addOutput(new Output("subprocess"));
-        mainDef.addExecutionPoint(mainService);
+	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflowDefinitionDescriptorImpl;
 
-        ProcessDefinition subprocess= new ProcessDefinition("subprocess");
-        Service subService = new Service("subService");
-        subprocess.addExecutionPoint(subService);
+	MockedBus myBus = new MockedBus();
 
-        Workflow workflow= new Workflow("testWorkflow");
-        workflow.addProcess(mainDef );
-        workflow.addProcess(subprocess);
+	@BeforeClass
+	public void before() throws ObjectStoreConnectorException {
+		ProcessDefinition mainDef = new ProcessDefinition("main");
+		Service mainService = new Service("mainService");
+		mainService.addOutput(new Output("subprocess"));
+		mainDef.addExecutionPoint(mainService);
 
-        BusManager.setBus(myBus);
+		ProcessDefinition subprocess = new ProcessDefinition("subprocess");
+		Service subService = new Service("subService");
+		subprocess.addExecutionPoint(subService);
 
-        BehaviorFactory behaviorFactory = new BehaviorFactoryImpl();
-        ActivitiWorkflowBuilder builder = new ActivitiWorkflowBuilder(behaviorFactory );
-        builder.buildWorkflow(workflow);
+		Workflow workflow = new Workflow("testWorkflow");
+		workflow.addProcess(mainDef);
+		workflow.addProcess(subprocess);
 
-        ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>("w1", "w1", workflow);
+		BusManager.setBus(myBus);
 
-        wdf.setProcessDefinitionRegistry(builder.getRegistry());
-        workflowDefinitionDescriptorImpl = wdf;
-    }
+		BehaviorFactory behaviorFactory = new BehaviorFactoryImpl();
+		ActivitiWorkflowBuilder builder = new ActivitiWorkflowBuilder(behaviorFactory);
+		builder.buildWorkflow(workflow);
 
-    /**
-     * this test should pass even if the bug is present
-     * @throws WorkflowNotDeployedException
-     */
-    @Test
-    public void testSameSequence() throws Exception {
-        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
-        long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
-        engine.resume(jobId);
-        myBus.requests.clear();
-        // assume taskId
-        int taskId = 0;
+		ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>("w1", "w1",
+				workflow);
 
-        // spawn subprocesses
-        engine.taskCompleted(jobId, taskId, new HashSet<Long>(Arrays.asList(0L, 1L, 2L, 3L)));
-        WorkflowJobInfo info = engine.getJobInfo(jobId);
-        Assert.assertEquals(4, info.getActiveSubtasksCount());
-        Assert.assertEquals(4, myBus.requests.size());
+		wdf.setProcessDefinitionRegistry(builder.getRegistry());
+		workflowDefinitionDescriptorImpl = wdf;
+	}
 
-        // complete subtasks in the same order, as they were run
-        engine.taskCompleted(jobId, myBus.requests.get(0).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(1).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(2).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(3).getTaskId(), null);
-
-        assertJobCompleted(engine.getJob(jobId));
-    }
-
-    private void assertJobCompleted(WorkflowJob mainJob) {
-        Assert.assertEquals(0, mainJob.getActiveSubtasksCount());
-        Assert.assertEquals(JobStatus.COMPLETED, mainJob.getStatus());
-    }
-
-
-    /**
-     * this test should pass only, if the bug is fixed
-     * @throws WorkflowNotDeployedException
-     */
+	/**
+	 * this test should pass even if the bug is present
+	 * 
+	 * @throws WorkflowNotDeployedException
+	 */
 	@Test
-    public void testBugFix() throws Exception {
-        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
-        long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
-        engine.resume(jobId);
-        myBus.requests.clear();
-        // assume taskId
-        int taskId = 0;
+	public void testSameSequence() throws Exception {
+		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+		ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 10);
+		long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
+		engine.resume(jobId);
+		Thread.sleep(100);
+		myBus.requests.clear();
 
-        engine.taskCompleted(jobId, taskId, new HashSet<Long>(Arrays.asList(0L, 1L, 2L, 3L)));
+		// assume taskId
+		int taskId = 0;
 
-        WorkflowJobInfo info = engine.getJobInfo(jobId);
-        Assert.assertEquals(4, info.getActiveSubtasksCount());
-        Assert.assertEquals(4, myBus.requests.size());
-        // signal main process
+		// spawn subprocesses
+		engine.taskCompleted(jobId, taskId, new HashSet<Long>(Arrays.asList(0L, 1L, 2L, 3L)));
+		WorkflowJobInfo info = engine.getJobInfo(jobId);
+		Thread.sleep(500);
+		Assert.assertEquals(4, info.getActiveSubtasksCount());
+		Assert.assertEquals(4, myBus.requests.size());
 
-        // complete tasks in mixed order
-        engine.taskCompleted(jobId, myBus.requests.get(1).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(0).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(3).getTaskId(), null);
-        engine.taskCompleted(jobId, myBus.requests.get(2).getTaskId(), null);
+		// complete subtasks in the same order, as they were run
+		List<TaskRequest> l = new ArrayList<TaskRequest>(myBus.requests);
+		engine.taskCompleted(jobId, l.get(0).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(1).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(2).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(3).getTaskId(), null);
 
-        assertJobCompleted(engine.getJob(jobId));
-    }
+		assertJobCompleted(engine.getJob(jobId));
+	}
+
+	private void assertJobCompleted(WorkflowJob mainJob) {
+		Assert.assertEquals(0, mainJob.getActiveSubtasksCount());
+		Assert.assertEquals(JobStatus.COMPLETED, mainJob.getStatus());
+	}
+
+	/**
+	 * this test should pass only, if the bug is fixed
+	 * 
+	 * @throws WorkflowNotDeployedException
+	 */
+	@Test
+	public void testBugFix() throws Exception {
+		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+		ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 10);
+		long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
+		engine.resume(jobId);
+		Thread.sleep(100);
+		myBus.requests.clear();
+
+		// assume taskId
+		int taskId = 0;
+
+		engine.taskCompleted(jobId, taskId, new HashSet<Long>(Arrays.asList(0L, 1L, 2L, 3L)));
+		WorkflowJobInfo info = engine.getJobInfo(jobId);
+		Thread.sleep(500);
+		Assert.assertEquals(4, info.getActiveSubtasksCount());
+		Assert.assertEquals(4, myBus.requests.size());
+		// signal main process
+
+		// complete tasks in mixed order
+		List<TaskRequest> l = new ArrayList<TaskRequest>(myBus.requests);
+		engine.taskCompleted(jobId, l.get(1).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(0).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(3).getTaskId(), null);
+		engine.taskCompleted(jobId, l.get(2).getTaskId(), null);
+
+		assertJobCompleted(engine.getJob(jobId));
+	}
 }

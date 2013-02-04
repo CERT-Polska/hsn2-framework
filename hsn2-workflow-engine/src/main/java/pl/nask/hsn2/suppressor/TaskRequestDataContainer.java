@@ -1,24 +1,25 @@
-package pl.nask.hsn2.activiti.suppressor;
+package pl.nask.hsn2.suppressor;
 
 import java.util.Properties;
 
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 
-public class TaskRequestData {
-	private String serviceName;
-	private String serviceId;
-	private int taskId;
-	private long objectDataId;
-	private Properties params;
-	private DefaultTasksStatistics stats;
+public final class TaskRequestDataContainer {
+	private final String serviceName;
+	private final String serviceId;
+	private final int taskId;
+	private final long objectDataId;
+	private final Properties params;
+	private final DefaultTasksStatistics stats;
 
-	public TaskRequestData(String serviceName, String serviceId, int taskId, long objectDataId, Properties params,
+	public TaskRequestDataContainer(String serviceName, String serviceId, int taskId, long objectDataId, Properties params,
 			DefaultTasksStatistics stats) {
 		this.serviceName = serviceName;
 		this.serviceId = serviceId;
 		this.taskId = taskId;
 		this.objectDataId = objectDataId;
 		this.params = params;
+		this.stats = stats;
 	}
 
 	public String getServiceName() {

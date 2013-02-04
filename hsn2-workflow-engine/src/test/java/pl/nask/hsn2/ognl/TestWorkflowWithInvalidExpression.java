@@ -38,11 +38,12 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
 
 public class TestWorkflowWithInvalidExpression {
-	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1);
 	private BehaviorFactory behaviorFactory;
 	/**
 	 * Test for bug #6674. Workflow tested:

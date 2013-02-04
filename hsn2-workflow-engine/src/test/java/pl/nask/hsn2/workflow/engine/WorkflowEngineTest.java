@@ -47,6 +47,7 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 public class WorkflowEngineTest {
@@ -114,7 +115,7 @@ public class WorkflowEngineTest {
 
     @BeforeMethod
     public void prepareEngine() {
-        engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+        engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1);
     }
 
     @Test
@@ -134,12 +135,14 @@ public class WorkflowEngineTest {
         WorkflowJob job = engine.getJob(jobId);
         job.resume();
         Assert.assertEquals(job.getActiveStepName(), "service(service)");
-        int taskId = getLastTaskId();
+        int taskId = bus.getLastTaskId();
+        //int taskId = getLastTaskId();
         job.markTaskAsAccepted(taskId);
         // service name is still the same
         Assert.assertEquals(job.getActiveStepName(), "service(service)");
         // same as the taskId
-        Assert.assertEquals(taskId, getLastTaskId());
+        //Assert.assertEquals(taskId, getLastTaskId());
+        Assert.assertEquals(taskId, bus.getLastTaskId());
     }
 
     @Test
@@ -148,10 +151,12 @@ public class WorkflowEngineTest {
         long jobId = engine.startJob(descriptor);
         WorkflowJob job = engine.getJob(jobId);
         job.resume();
-        int taskId = getLastTaskId();
+        //int taskId = getLastTaskId();
+        int taskId = bus.getLastTaskId();
         job.markTaskAsCompleted(taskId, null);
         Assert.assertEquals("service(service2)", job.getActiveStepName());
-        Assert.assertFalse(taskId == getLastTaskId());
+        //Assert.assertFalse(taskId == getLastTaskId());
+        Assert.assertFalse(taskId == bus.getLastTaskId());
     }
 
     @Test
@@ -170,22 +175,20 @@ public class WorkflowEngineTest {
         long jobId = engine.startJob(descriptor);
         WorkflowJob job = engine.getJob(jobId);
         job.resume();
-        int taskId = getLastTaskId();
+        //int taskId = getLastTaskId();
+        int taskId = bus.getLastTaskId();
         job.markTaskAsCompleted(taskId, new HashSet<Long>(Arrays.asList(1L)));
         // the main process should stop on the wait state
         Assert.assertFalse(job.isEnded());
-        int subtaskId = getLastTaskId();
+        int subtaskId = bus.getLastTaskId();
+        //int subtaskId = getLastTaskId();
         job.markTaskAsCompleted(subtaskId, null);
         // this should trigger 'wait' in the main to end the process
         Assert.assertTrue(job.isEnded());
     }
 
-    private int getLastTaskId() {
-        return bus.lastTaskId;
-    }
-
     public static class MyBus implements FrameworkBus {
-        int lastTaskId = -1;
+        private int lastTaskId = -1;
         private ObjectStoreConnector objectStoreConnector = new StubObjectStoreConnector(){
         	@Override
             public Long sendObjectStoreData(
@@ -232,5 +235,14 @@ public class WorkflowEngineTest {
 		@Override
 		public void jobFinished(long jobId, JobStatus status) {
 		}
+		int getLastTaskId() {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return lastTaskId;
+		}		
     }
 }

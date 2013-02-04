@@ -40,6 +40,7 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
+import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 public class IgnoreErrorsWorkflowEngineTest {
@@ -62,7 +63,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		WorkflowJob job = activityEngine.getJob(jobId);
 		job.resume();
 
-		int taskId =  myBus.lastTaskId;
+		int taskId =  myBus.getLastTaskId();
 		activityEngine.taskAccepted(jobId, taskId);
 		
 		Assert.assertEquals(job.getStatus(), JobStatus.PROCESSING);
@@ -74,7 +75,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		Assert.assertEquals(job.getStatus(), JobStatus.PROCESSING);
 		Assert.assertEquals(job.getActiveStepName(),"service(service2)");
 		
-		taskId = myBus.lastTaskId;
+		taskId = myBus.getLastTaskId();
 		activityEngine.taskAccepted(jobId, taskId);
 		activityEngine.taskCompleted(jobId, taskId, new TreeSet<Long>());
 		
@@ -96,7 +97,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		WorkflowJob job = activityEngine.getJob(jobId);
 		job.resume();
 		
-		int taskId = myBus.lastTaskId;
+		int taskId = myBus.getLastTaskId();
 		activityEngine.taskAccepted(jobId, taskId);
 		Assert.assertEquals(job.getActiveStepName(), "service(service1)");
 		
@@ -139,7 +140,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		final long jobId = activityEngine.startJob(wd);
 		WorkflowJob job = activityEngine.getJob(jobId);
 		job.resume();
-		int taskId = myBus.lastTaskId;
+		int taskId = myBus.getLastTaskId();
 		activityEngine.taskAccepted(jobId, taskId);
 		
 		Assert.assertEquals(job.getStatus(), JobStatus.PROCESSING);
@@ -160,7 +161,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		job.resume();
 		Assert.assertEquals(job.getStatus(), JobStatus.PROCESSING);
 		
-		int taskId = myBus.lastTaskId;
+		int taskId = myBus.getLastTaskId();
 		Assert.assertEquals(job.getActiveStepName(),"service(service1)");
 		activityEngine.taskAccepted(jobId, taskId);
 		
@@ -168,7 +169,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 		activityEngine.taskCompleted(jobId, taskId, set);
 		Assert.assertEquals(job.getStatus(), JobStatus.PROCESSING);
 		
-		taskId = myBus.lastTaskId;
+		taskId = myBus.getLastTaskId();
 		activityEngine.taskAccepted(jobId, taskId);
 		activityEngine.taskCompleted(jobId, taskId, new TreeSet<Long>());
 		Assert.assertEquals(job.getStatus(), JobStatus.COMPLETED);
@@ -180,14 +181,11 @@ public class IgnoreErrorsWorkflowEngineTest {
 	public void beforeClass() throws WorkflowEngineException {
 		myBus = new WorkflowEngineTest.MyBus();
 		BusManager.setBus(myBus);
-		activityEngine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator()) ;
+		activityEngine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1) ;
 		workflowManager = new ActivitiWorkflowDefinitionManager();
 		createWorkflows();
 	}
 
-	
-	
-	
 	private void createWorkflows() throws WorkflowAlreadyRegisteredException,
 	WorkflowAlreadyDeployedException, WorkflowNotRegisteredException {
 		

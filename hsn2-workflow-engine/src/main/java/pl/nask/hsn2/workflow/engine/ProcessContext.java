@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.activiti.IntIdGen;
-import pl.nask.hsn2.activiti.suppressor.TasksSuppressor;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 
 public class ProcessContext {	
@@ -40,16 +40,16 @@ public class ProcessContext {
 	private final IntIdGen taskIdGenerator;
 	private final DefaultTasksStatistics stats;
 	private final List<ExecutionWrapper> waitingForResume;
-	private final TasksSuppressor tasksSuppressor;
+	private JobSuppressorHelper jobSuppressorHelper;
 	
 	private Integer currentTaskId;
 	private int taskAccepted;
 	
-	public ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats, TasksSuppressor tasksSuppressor) {
-		this(jobId, userConfig, subprocessParams, stats, new IntIdGen(), new LinkedList<ExecutionWrapper>(), tasksSuppressor);
+	public ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats, JobSuppressorHelper jobSuppressorHelper) {
+		this(jobId, userConfig, subprocessParams, stats, new IntIdGen(), new LinkedList<ExecutionWrapper>(), jobSuppressorHelper);
 	}
 
-	private ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats, IntIdGen intIdGen, List<ExecutionWrapper> waitingForResume, TasksSuppressor tasksSuppressor) {
+	private ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats, IntIdGen intIdGen, List<ExecutionWrapper> waitingForResume, JobSuppressorHelper jobSuppressorHelper) {
 		this.stats = stats;
 		this.jobId = jobId;
 		this.subprocessParameters = subprocessParams;
@@ -60,7 +60,7 @@ public class ProcessContext {
 		}	
 		this.taskIdGenerator = intIdGen;
 		this.waitingForResume = waitingForResume;
-		this.tasksSuppressor = tasksSuppressor;
+		this.jobSuppressorHelper = jobSuppressorHelper;
 	}
 
 	int newTaskId() {
@@ -94,7 +94,7 @@ public class ProcessContext {
 	}
 
 	public ProcessContext subprocessContext(SubprocessParameters subprocessParams) {
-		return new ProcessContext(jobId, userConfig, subprocessParams, stats, taskIdGenerator, waitingForResume, tasksSuppressor);
+		return new ProcessContext(jobId, userConfig, subprocessParams, stats, taskIdGenerator, waitingForResume, jobSuppressorHelper);
 	}
 
 	public void markTaskAsAccepted() {
@@ -104,7 +104,11 @@ public class ProcessContext {
 		}
 	}
 
-	public TasksSuppressor getTasksSuppressor() {
-		return tasksSuppressor;
+	public JobSuppressorHelper getJobSuppressorHelper() {
+		return jobSuppressorHelper;
+	}
+	
+	public void removeJobSuppressorHelper() {
+		jobSuppressorHelper = null;
 	}
 }
