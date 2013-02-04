@@ -30,11 +30,11 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import pl.nask.hsn2.activiti.behavior.TransientParallelGatewayBehavior;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.hwl.Parallel;
 import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 @Test
@@ -144,7 +144,7 @@ public class StaticParallelTest extends AbstractActivitiTest {
         PvmProcessDefinition pdef = createHwlProcessDef();
         PvmProcessInstance instance = pdef.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor(true));
         wrapper.initProcessState(1, jobSuppressorHelper);
         instance.start();
         instance.signal("resume", null);

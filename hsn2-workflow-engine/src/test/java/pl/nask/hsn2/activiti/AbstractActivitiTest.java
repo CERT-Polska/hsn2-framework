@@ -40,8 +40,8 @@ import pl.nask.hsn2.bus.connector.process.ProcessConnector;
 import pl.nask.hsn2.bus.connector.process.StubProcessConnector;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 public class AbstractActivitiTest {
@@ -139,7 +139,7 @@ public class AbstractActivitiTest {
         for (int i=0; i<5000; i++) {
             PvmProcessInstance instance = def.createProcessInstance();
             ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-            wrapper.initProcessState(i, new JobSuppressorHelperImpl(1L, 100, new SingleThreadTasksSuppressor()));
+            wrapper.initProcessState(i, new JobSuppressorHelperImpl(1L, 100, new SingleThreadTasksSuppressor(true)));
             setVariables(instance, variables);
             instances.add(instance);
         }

@@ -31,6 +31,7 @@ import pl.nask.hsn2.activiti.BehaviorFactory;
 import pl.nask.hsn2.activiti.BehaviorFactoryImpl;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.operations.JobStatus;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.hwl.Conditional;
 import pl.nask.hsn2.framework.workflow.hwl.ExecutionFlow;
@@ -38,12 +39,11 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
 
 public class TestWorkflowWithInvalidExpression {
-	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1);
+	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(true), 1);
 	private BehaviorFactory behaviorFactory;
 	/**
 	 * Test for bug #6674. Workflow tested:

@@ -29,8 +29,8 @@ import pl.nask.hsn2.activiti.PvmApiExampleTest.EmptyActivitiBehavior;
 import pl.nask.hsn2.activiti.behavior.DecisionActivityBehavior;
 import pl.nask.hsn2.expressions.EvaluationException;
 import pl.nask.hsn2.expressions.ExpressionResolver;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 @Test
@@ -57,7 +57,7 @@ public class ConditionalTest extends AbstractActivitiTest {
 
         PvmProcessInstance pi = processDefinition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(pi);
-        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor(true));
         wrapper.initProcessState(1, jobSuppressorHelper);
 
         pi.start();
@@ -92,7 +92,7 @@ public class ConditionalTest extends AbstractActivitiTest {
 
         PvmProcessInstance pi = processDefinition.createProcessInstance();
         ExecutionWrapper wrapper = new ExecutionWrapper(pi);
-        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor());
+        JobSuppressorHelperImpl jobSuppressorHelper = new JobSuppressorHelperImpl(1, 100, new SingleThreadTasksSuppressor(true));
         wrapper.initProcessState(1, jobSuppressorHelper);
         pi.start();
         Assert.assertEquals(pi.getActivity().getId(), "start");

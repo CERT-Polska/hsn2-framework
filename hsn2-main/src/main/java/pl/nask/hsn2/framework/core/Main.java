@@ -42,9 +42,9 @@ import pl.nask.hsn2.framework.configuration.ConfigurationManager;
 import pl.nask.hsn2.framework.configuration.ConfigurationManagerImpl;
 import pl.nask.hsn2.framework.configuration.MappingException;
 import pl.nask.hsn2.framework.configuration.validation.ValidationException;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.repository.GitWorkflowRepository;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.FileIdGenerator;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowDefinitionManager;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
@@ -154,10 +154,10 @@ public class Main {
 							+ " or change configuration key 'jobs.sequence.file' to point on correct file.");
         }
         
-        // ONLY ONE SUPPRESSOR INSTANCE SHOULD BE USED (not thread safe)
-        SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+        // ONLY ONE SUPPRESSOR INSTANCE SHOULD BE USED HERE
+        SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(configuration.getJobsSuppressorEnabled());
         
-        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(idGenerator, suppressor, configuration.getJobsSuppressorTasksThreshold());
+        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(idGenerator, suppressor, configuration.getJobsSuppressorBufferSize());
         WorkflowManager.setWorkflowEngine(engine);
 
         // sets limits

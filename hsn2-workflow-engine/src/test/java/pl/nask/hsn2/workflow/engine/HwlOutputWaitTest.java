@@ -35,13 +35,13 @@ import pl.nask.hsn2.activiti.BehaviorFactoryImpl;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.operations.ObjectData;
 import pl.nask.hsn2.bus.operations.TaskRequest;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 @Test(enabled=true)
@@ -61,7 +61,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
 
     public void serviceWithSimpleOutput() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition(null);
-    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
     	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
@@ -87,7 +87,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
 
     public void recursiveOutput() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition(null);
-    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
     	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
@@ -119,7 +119,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     
     public void outputConditionFalse() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition("id==1000");
-    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
     	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	
@@ -142,7 +142,7 @@ public class HwlOutputWaitTest extends AbstractActivitiTest {
     
     public void outputConditionTrue() throws Exception {
     	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> wdf = buildWorkflowDefinition("id==1000");
-    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+    	SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
     	ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 1);
     	long jobId = engine.startJob(wdf);
     	engine.resume(jobId);    	

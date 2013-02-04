@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowAlreadyDeployedException;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowAlreadyRegisteredException;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
@@ -40,7 +41,6 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 public class IgnoreErrorsWorkflowEngineTest {
@@ -181,7 +181,7 @@ public class IgnoreErrorsWorkflowEngineTest {
 	public void beforeClass() throws WorkflowEngineException {
 		myBus = new WorkflowEngineTest.MyBus();
 		BusManager.setBus(myBus);
-		activityEngine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1) ;
+		activityEngine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(true), 1) ;
 		workflowManager = new ActivitiWorkflowDefinitionManager();
 		createWorkflows();
 	}

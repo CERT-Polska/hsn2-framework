@@ -82,8 +82,6 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             processInstance = processDefinition.createProcessInstance();
             this.objectDataId = createInitialObject(jobId);
             ExecutionWrapper utils = new ExecutionWrapper(processInstance);
-            // WST tu jest dostepny job-start i job-finish (nizej)
-            
             utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats, jobSuppressorHelper);
             this.startTime  = System.currentTimeMillis();
             processInstance.start();

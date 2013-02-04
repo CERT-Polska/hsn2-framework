@@ -38,6 +38,7 @@ import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.TaskRequest;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowNotDeployedException;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
@@ -46,7 +47,6 @@ import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 /**
@@ -110,7 +110,7 @@ public class TestFor4989 {
 	 */
 	@Test
 	public void testSameSequence() throws Exception {
-		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
 		ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 10);
 		long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
 		engine.resume(jobId);
@@ -149,7 +149,7 @@ public class TestFor4989 {
 	 */
 	@Test
 	public void testBugFix() throws Exception {
-		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor();
+		SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(true);
 		ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), suppressor, 10);
 		long jobId = engine.startJob(workflowDefinitionDescriptorImpl);
 		engine.resume(jobId);

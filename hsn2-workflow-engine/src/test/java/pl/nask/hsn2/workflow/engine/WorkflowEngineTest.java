@@ -40,6 +40,7 @@ import pl.nask.hsn2.bus.connector.process.StubProcessConnector;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.ObjectData;
 import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowEngineException;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
@@ -47,7 +48,6 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 
 public class WorkflowEngineTest {
@@ -115,7 +115,7 @@ public class WorkflowEngineTest {
 
     @BeforeMethod
     public void prepareEngine() {
-        engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(), 1);
+        engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(true), 1);
     }
 
     @Test
@@ -239,8 +239,7 @@ public class WorkflowEngineTest {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// nothing to do
 			}
 			return lastTaskId;
 		}		

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
 import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowEngine;
@@ -43,7 +44,6 @@ import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobRepository;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobRepositoryException;
 import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
-import pl.nask.hsn2.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.utils.FileIdGenerator;
 import pl.nask.hsn2.utils.IdGenerator;
 
@@ -71,11 +71,14 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 	}
 
 	private long startJob(WorkflowJob job) throws WorkflowEngineException {
-        long id = jobRepository.add(job);
-        JobSuppressorHelper jsh = new JobSuppressorHelperImpl(id, tasksSuppressorThreshold, suppressor);
-        job.start(id, jsh);
-        return id;
-    }
+		long id = jobRepository.add(job);
+		JobSuppressorHelper jobSuppressorHelper = null;
+		if (suppressor.isEnabled()) {
+			jobSuppressorHelper = new JobSuppressorHelperImpl(id, tasksSuppressorThreshold, suppressor);
+		}
+		job.start(id, jobSuppressorHelper);
+		return id;
+	}
 
 	@Override
 	public void taskAccepted(long jobId, int taskId) {

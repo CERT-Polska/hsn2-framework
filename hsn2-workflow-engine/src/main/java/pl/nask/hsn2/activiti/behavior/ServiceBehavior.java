@@ -30,6 +30,7 @@ import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.nask.hsn2.bus.connector.process.ProcessConnectorException;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
 import pl.nask.hsn2.expressions.EvaluationException;
 import pl.nask.hsn2.expressions.ExpressionResolver;
@@ -38,6 +39,7 @@ import pl.nask.hsn2.framework.workflow.engine.ProcessDefinitionRegistry;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.suppressor.JobSuppressorUtils;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 import pl.nask.hsn2.workflow.engine.SubprocessParameters;
 
@@ -65,14 +67,14 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
     }
 
     @Override
-    public void execute(ActivityExecution execution) {
-        LOGGER.debug("Executing activity {}", execution.getActivity().getId());
-        ExecutionWrapper wrapper = new ExecutionWrapper(execution);
+	public void execute(ActivityExecution execution) {
+		LOGGER.debug("Executing activity {}", execution.getActivity().getId());
+		ExecutionWrapper wrapper = new ExecutionWrapper(execution);
 
-        Long jobId = wrapper.getJobId();
-        if (jobId == null) {
-            throw new IllegalStateException("No job_id found for the execution: " + execution);
-        }
+		Long jobId = wrapper.getJobId();
+		if (jobId == null) {
+			throw new IllegalStateException("No job_id found for the execution: " + execution);
+		}
 
 		int taskId = wrapper.setNewTaskId();
 		Properties params = ServiceParam.merge(serviceParameters, wrapper.getUserConfig().get(serviceLabel), true);
@@ -80,8 +82,21 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
 		long objectDataId = (processParams != null) ? processParams.getObjectDataId() : 0L;
 		DefaultTasksStatistics stats = wrapper.getJobStats();
 
-        wrapper.getProcessContext().getJobSuppressorHelper().addTaskRequest(serviceName, serviceLabel, taskId, objectDataId, params, stats);
-    }
+		JobSuppressorHelper jobSuppressorHelper = wrapper.getProcessContext().getJobSuppressorHelper();
+		if (jobSuppressorHelper == null) {
+			// Suppressor is disabled.
+			try {
+				JobSuppressorUtils.sendTaskRequest(jobId, stats, serviceName, serviceLabel, taskId, objectDataId, params);
+			} catch (ProcessConnectorException e) {
+				LOGGER.error(e.getMessage(), e);
+				System.exit(1); // TODO: doggy! fix it ASAP! Maybe internal TaskError operation?
+			}
+		} else {
+			// Suppressor is enabled.
+			wrapper.getProcessContext().getJobSuppressorHelper()
+					.addTaskRequest(serviceName, serviceLabel, taskId, objectDataId, params, stats);
+		}
+	}
 
     @Override
     public void signal(ActivityExecution execution, String signalName, Object signalData) throws EvaluationException {
@@ -98,12 +113,18 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         }
         if ("completeTask".equalsIgnoreCase(signalName)) {
             completeTask(execution, signalData);
-            jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId());
+            if (jobSuppressorHelper != null) {
+            	// Suppressor is enabled.
+            	jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId(), wrapper.getJobStats());
+            }
         } else if ("subprocess".equalsIgnoreCase(signalName)) {
             runSubprocesses(execution, signalData);
         } else if ("taskFailed".equalsIgnoreCase(signalName)) {
         	handleTaskFailed(execution,(Object [])signalData);
-        	jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId());
+            if (jobSuppressorHelper != null) {
+            	// Suppressor is enabled.
+            	jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId(), wrapper.getJobStats());
+            }
         } else {
             LOGGER.debug("Unknown signal name, ignore: {}",signalName);
         }

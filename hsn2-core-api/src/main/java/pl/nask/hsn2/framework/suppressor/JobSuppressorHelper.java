@@ -35,6 +35,22 @@ public interface JobSuppressorHelper {
 	 *            Job ID.
 	 * @param taskId
 	 *            Task ID.
+	 * @param stats
+	 *            Job statistics.
 	 */
-	public void signalTaskCompletion(Long jobId, Integer taskId);
+	public void signalTaskCompletion(Long jobId, Integer taskId, DefaultTasksStatistics stats);
+
+	/**
+	 * Provides actual tasks requests number waiting to be processed.
+	 * 
+	 * @return Tasks requests number.
+	 */
+	public int getWaitingTasksRequestsCount();
+
+	/**
+	 * Provides actual free task buffer spaces.
+	 * 
+	 * @return Free task buffer spaces.
+	 */
+	public int getFreeBuforSpacesCount();
 }
