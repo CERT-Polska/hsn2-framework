@@ -137,6 +137,9 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
                 execution.markTaskAsAccepted();
             }
         } else {
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
             LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as accepted", jobId, requestId);
         }
     }
@@ -183,7 +186,10 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             	finishJob();
             }
         } else {
-            LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
         }
     }
 
@@ -208,6 +214,12 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     		}
     	} else {
     		LOGGER.debug("Job (id={}) is not running (already failed). Can not mark task (id={}) as failed. Ignoring new failure reason {} ({})", new Object[] {jobId, requestId, reason, description});
+    		
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+
     	}
     }
 

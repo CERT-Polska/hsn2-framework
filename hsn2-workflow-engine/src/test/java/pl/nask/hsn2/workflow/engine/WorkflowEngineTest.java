@@ -242,6 +242,8 @@ public class WorkflowEngineTest {
 				// nothing to do
 			}
 			return lastTaskId;
+		}
+		@Override public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
 		}		
     }
 }

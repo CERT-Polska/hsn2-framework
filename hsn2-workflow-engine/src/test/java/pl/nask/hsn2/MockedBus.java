@@ -106,4 +106,8 @@ public class MockedBus implements FrameworkBus {
 	@Override
 	public void jobFinished(long jobId, JobStatus status) {
 	}
+
+	@Override
+	public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
+	}
 }

@@ -127,6 +127,6 @@ public class FullExampleTest {
 		@Override public boolean isRunning() { return true; }
 		@Override public void jobStarted(long jobId) { }
 		@Override public void jobFinished(long jobId, JobStatus status) { }
-
+		@Override public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {}
     }
 }
