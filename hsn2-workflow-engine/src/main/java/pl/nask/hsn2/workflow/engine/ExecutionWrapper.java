@@ -30,6 +30,7 @@ import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.activiti.engine.impl.pvm.runtime.ExecutionImpl;
 
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 
@@ -57,18 +58,17 @@ public final class ExecutionWrapper {
         pvmExecution = null;
     }
 
-    public void initProcessState(long jobId, long objectId, Map<String, Properties> userConfig, WorkflowDescriptor wdf) {
-        initProcessState(jobId, objectId, userConfig, wdf, new DefaultTasksStatistics());
+    public void initProcessState(long jobId, long objectId, Map<String, Properties> userConfig, WorkflowDescriptor wdf, JobSuppressorHelper jobSuppressorHelper) {
+        initProcessState(jobId, objectId, userConfig, wdf, new DefaultTasksStatistics(), jobSuppressorHelper);
     }
 
-    public void initProcessState(long jobId, long objectId,	Map<String, Properties> userConfig, WorkflowDescriptor wdf, DefaultTasksStatistics stats) {
+    public void initProcessState(long jobId, long objectId,	Map<String, Properties> userConfig, WorkflowDescriptor wdf, DefaultTasksStatistics stats, JobSuppressorHelper jobSuppressorHelper) {
         if (pvmExecution == null)
             throw new IllegalStateException("Process variables can be initialized in the PvmExecution only");
-
         if (getProcessContext() != null)
             throw new IllegalStateException("Process variables are already initialized");
-        
-        ProcessContext subprocessContext = new ProcessContext(jobId, userConfig, new SubprocessParameters(wdf, objectId), stats);
+
+        ProcessContext subprocessContext = new ProcessContext(jobId, userConfig, new SubprocessParameters(wdf, objectId), stats, jobSuppressorHelper);
         pvmExecution.setVariable(PROCESS_CONTEXT, subprocessContext);
     }
     
@@ -79,8 +79,8 @@ public final class ExecutionWrapper {
     	return processContext;
     }
 
-    public void initProcessState(long jobId) {
-        initProcessState(jobId, 0, null, null);
+    public void initProcessState(long jobId, JobSuppressorHelper jobSuppressorHelper) {
+        initProcessState(jobId, 0, null, null, jobSuppressorHelper);
     }
 
 
@@ -122,7 +122,6 @@ public final class ExecutionWrapper {
         return getProcessContext().getTaskId();
     }
 
-    @SuppressWarnings("unchecked")
 	public Map<String, Properties> getUserConfig() {
         return getProcessContext().getUserConfig();
     }
@@ -224,7 +223,6 @@ public final class ExecutionWrapper {
         return getProcessContext().getSubprocessParameters();
     }
 
-    @SuppressWarnings("unchecked")
 	private List<ExecutionWrapper> getWaitingOnResume() {
         return getProcessContext().getWaitingForResume();
     }

@@ -86,6 +86,13 @@ public class InfoRequestCmd implements Command<InfoRequest> {
 				.getTasksStatistics().getStarted(), workflowJobInfo
 				.getTasksStatistics().getFinished());
 
+		int suppressorFreeSlots = workflowJobInfo.getTasksStatistics().getFreeTaskBufferSpacesCount();
+		int suppressorWaitListSize = workflowJobInfo.getTasksStatistics().getWaitingTasksRequestCount();
+		if (suppressorFreeSlots > -1 && suppressorWaitListSize > -1) {
+			objDataBuilder.addIntAttribute("suppressor_free_slots", suppressorFreeSlots);
+			objDataBuilder.addIntAttribute("suppressor_waiting_requests", suppressorWaitListSize);
+		}
+
 		return objDataBuilder.build();
 	}
 }

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.bus.api.Message;
 import pl.nask.hsn2.bus.operations.JobFinished;
+import pl.nask.hsn2.bus.operations.JobFinishedReminder;
 import pl.nask.hsn2.bus.operations.JobStarted;
 import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.bus.operations.TaskAccepted;
@@ -104,6 +105,8 @@ public class MonitoringExchangeConsumerTest {
 			return getTaskInfo((JobStarted) operation);
 		} else if (operation instanceof JobFinished) {
 			return getTaskInfo((JobFinished) operation);
+		} else if (operation instanceof JobFinishedReminder) {
+			return getTaskInfo((JobFinishedReminder) operation);
 		} else if (operation instanceof TaskAccepted) {
 			return getTaskInfo((TaskAccepted) operation);
 		} else if (operation instanceof TaskCompleted) {
@@ -117,7 +120,8 @@ public class MonitoringExchangeConsumerTest {
 
 	private String getTaskInfo(TaskRequest task, String service) {
 		jobsAndTasks.put(task.getJob() + "-" + task.getTaskId(), getServiceNameFromQueueName(service));
-		return String.format("job=%d,task=%d (send to %s)", task.getJob(), task.getTaskId(), getServiceNameFromQueueName(getServiceNameFromQueueName(service)));
+		return String.format("(send to %s) job=%d,task=%d", getServiceNameFromQueueName(getServiceNameFromQueueName(service)),
+				task.getJob(), task.getTaskId());
 	}
 
 	private String getTaskInfo(JobStarted task) {
@@ -125,18 +129,22 @@ public class MonitoringExchangeConsumerTest {
 	}
 
 	private String getTaskInfo(JobFinished task) {
-		return String.format("job=%d, status=%s", task.getJobId(), task.getStatus().toString());
+		return String.format("job=%d, status=%s", task.getJobId(), task.getStatus());
+	}
+
+	private String getTaskInfo(JobFinishedReminder task) {
+		return String.format("job=%d, status=%s, offendedTask=%d", task.getJobId(), task.getStatus(), task.getOffendingTask());
 	}
 
 	private String getTaskInfo(TaskAccepted task) {
 		String service = jobsAndTasks.get(task.getJobId() + "-" + task.getTaskId());
-		return String.format("job=%d, task=%d (info from %s)", task.getJobId(), task.getTaskId(), service);
+		return String.format("(info from %s) job=%d, task=%d", service, task.getJobId(), task.getTaskId());
 	}
 
 	private String getTaskInfo(TaskError task) {
 		String service = jobsAndTasks.get(task.getJobId() + "-" + task.getTaskId());
-		return String.format("job=%d, task=%d, reason=%s, desc=%s (info from %s)", task.getJobId(), task.getTaskId(), task.getReason(), task.getDescription(),
-				service);
+		return String.format("(info from %s) job=%d, task=%d, reason=%s, desc=%s", service, task.getJobId(), task.getTaskId(),
+				task.getReason(), task.getDescription());
 	}
 
 	private String getTaskInfo(TaskCompleted task) {
@@ -163,7 +171,8 @@ public class MonitoringExchangeConsumerTest {
 			}
 			objects = sb.append("}").toString();
 		}
-		return String.format("job=%d, task=%d, warn=%s, obj=%s (info from %s)", task.getJobId(), task.getTaskId(), warnings, objects, service);
+		return String.format("(info from %s) job=%d, task=%d, warn=%s, obj=%s", service, task.getJobId(), task.getTaskId(), warnings,
+				objects);
 	}
 
 	private String getServiceNameFromQueueName(String queueName) {

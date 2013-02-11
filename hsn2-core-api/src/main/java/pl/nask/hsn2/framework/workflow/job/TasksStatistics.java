@@ -53,4 +53,8 @@ public interface TasksStatistics {
     Map<String, Integer> getFinished();
 
 	int getSubprocessesStarted();
+	
+	int getFreeTaskBufferSpacesCount();
+	
+	int getWaitingTasksRequestCount();
 }

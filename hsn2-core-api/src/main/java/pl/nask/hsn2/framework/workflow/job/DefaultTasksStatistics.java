@@ -30,72 +30,95 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * This implementation is thread-safe.
  * 
- *
+ * 
  */
 public class DefaultTasksStatistics implements TasksStatistics {
-	
+
 	/**
 	 * Internal map of running tasks.
 	 */
-    private ConcurrentMap<String, AtomicInteger> started = new ConcurrentHashMap<String, AtomicInteger>();
-    
-    /**
-     * Internal map of finished tasks.
-     */
-    private ConcurrentMap<String, AtomicInteger> finished = new ConcurrentHashMap<String, AtomicInteger>();
-    
-    private AtomicInteger subprocessesStarted = new AtomicInteger();
-    
-    @Override
-    public final Map<String, Integer> getStarted() {
-        return getValues(started);
-    }
+	private ConcurrentMap<String, AtomicInteger> started = new ConcurrentHashMap<String, AtomicInteger>();
 
-    @Override
-    public final Map<String, Integer> getFinished() {
-        return getValues(finished);
-    }
+	/**
+	 * Internal map of finished tasks.
+	 */
+	private ConcurrentMap<String, AtomicInteger> finished = new ConcurrentHashMap<String, AtomicInteger>();
 
-    /**
-     * Update stats by new started task or subprocess.
-     * 
-     * @param taskName Started task name.
-     */
-    public final void taskStarted(String taskName) {
-        inc(taskName, started);
-    }
+	private AtomicInteger subprocessesStarted = new AtomicInteger();
+	private AtomicInteger freeTasksBufferCount = new AtomicInteger();
+	private AtomicInteger waitingTasksRequestsCount = new AtomicInteger();
 
-    /**
-     * Update stats by finished task or subprocess.
-     * 
-     * @param taskName Finished task name.
-     */
-    public final void taskCompleted(String taskName) {
-        inc(taskName, finished);
-    }
+	public DefaultTasksStatistics() {
+		freeTasksBufferCount.set(-1);
+		waitingTasksRequestsCount.set(-1);
+	}
 
-    private void inc(String taskName, ConcurrentMap<String, AtomicInteger> src) {
-        AtomicInteger counter = src.putIfAbsent(taskName, new AtomicInteger(1));
-        if (counter != null)
-            counter.incrementAndGet();
-    }
+	@Override
+	public final Map<String, Integer> getStarted() {
+		return getValues(started);
+	}
 
-    private Map<String, Integer> getValues(ConcurrentMap<String, AtomicInteger> src) {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        for (Map.Entry<String, AtomicInteger> entry: src.entrySet()) {
-            map.put(entry.getKey(), entry.getValue().get());
-        }
+	@Override
+	public final Map<String, Integer> getFinished() {
+		return getValues(finished);
+	}
 
-        return map;
-    }
+	/**
+	 * Update stats by new started task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Started task name.
+	 */
+	public final void taskStarted(String taskName) {
+		inc(taskName, started);
+	}
 
-    
+	/**
+	 * Update stats by finished task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Finished task name.
+	 */
+	public final void taskCompleted(String taskName) {
+		inc(taskName, finished);
+	}
+
+	private void inc(String taskName, ConcurrentMap<String, AtomicInteger> src) {
+		AtomicInteger counter = src.putIfAbsent(taskName, new AtomicInteger(1));
+		if (counter != null)
+			counter.incrementAndGet();
+	}
+
+	private Map<String, Integer> getValues(ConcurrentMap<String, AtomicInteger> src) {
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		for (Map.Entry<String, AtomicInteger> entry : src.entrySet()) {
+			map.put(entry.getKey(), entry.getValue().get());
+		}
+
+		return map;
+	}
+
 	public void subprocessStarted() {
 		subprocessesStarted.incrementAndGet();
 	}
-	
+
 	@Override
 	public int getSubprocessesStarted() {
 		return subprocessesStarted.get();
+	}
+
+	@Override
+	public int getFreeTaskBufferSpacesCount() {
+		return freeTasksBufferCount.get();
+	}
+
+	@Override
+	public int getWaitingTasksRequestCount() {
+		return waitingTasksRequestsCount.get();
+	}
+
+	public void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber) {
+		freeTasksBufferCount.set(freeBufferSpaces);
+		waitingTasksRequestsCount.set(waitingTasksNumber);
 	}
 }
