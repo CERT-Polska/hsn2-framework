@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
-import pl.nask.hsn2.activiti.behavior.FatalTaskErrorException;
 import pl.nask.hsn2.activiti.behavior.HSNBehavior;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
@@ -39,13 +38,13 @@ import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.ObjectData;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
 import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
 public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
-
     private final static Logger LOGGER = LoggerFactory.getLogger(ActivitiJob.class);
 
     private final ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflowDefinitionDescriptor;
@@ -56,7 +55,6 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     private TaskErrorReasonType failureReason;
     private boolean running = false;
-
     private String failureDescription;
 
     private Map<String, Properties> userConfig;
@@ -65,9 +63,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     private long endTime = 0;
 
     private String lastActiveStepName;
-
     private long objectDataId;
-
     private DefaultTasksStatistics stats = new DefaultTasksStatistics();
 
 	public ActivitiJob(PvmProcessDefinition processDefinition,
@@ -79,14 +75,14 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized void start(long jobId) {
+    public synchronized void start(long jobId, JobSuppressorHelper jobSuppressorHelper) {
         if (processInstance != null) {
             throw new IllegalStateException("Job already started");
         } else {
             processInstance = processDefinition.createProcessInstance();
             this.objectDataId = createInitialObject(jobId);
             ExecutionWrapper utils = new ExecutionWrapper(processInstance);
-            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats);
+            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats, jobSuppressorHelper);
             this.startTime  = System.currentTimeMillis();
             processInstance.start();
             this.jobId = jobId;
@@ -214,10 +210,14 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     		LOGGER.debug("Job (id={}) is not running (already failed). Can not mark task (id={}) as failed. Ignoring new failure reason {} ({})", new Object[] {jobId, requestId, reason, description});
     	}
     }
-    
+
     private void finishJob(){
     	this.endTime  = System.currentTimeMillis();
 		this.running = false;
+
+        ExecutionWrapper utils = new ExecutionWrapper(processInstance);
+        utils.getProcessContext().removeJobSuppressorHelper();
+
 		try{
 			((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendJobFinished(jobId, getStatus());
 		}
