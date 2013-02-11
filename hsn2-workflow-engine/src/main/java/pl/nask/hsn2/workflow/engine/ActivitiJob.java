@@ -137,6 +137,10 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
                 execution.markTaskAsAccepted();
             }
         } else {
+        	// WST TaskAccepted: tutaj wyslanie wiadomosci jak job istnieje ale jest zakonczony
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
             LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as accepted", jobId, requestId);
         }
     }
@@ -183,7 +187,11 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             	finishJob();
             }
         } else {
-            LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+        	// WST TaskCompleted: tutaj wyslanie wiadomosci jak job istnieje ale jest zakonczony
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
         }
     }
 
@@ -208,6 +216,13 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     		}
     	} else {
     		LOGGER.debug("Job (id={}) is not running (already failed). Can not mark task (id={}) as failed. Ignoring new failure reason {} ({})", new Object[] {jobId, requestId, reason, description});
+    		
+        	// WST TaskError: tutaj wyslanie wiadomosci jak job istnieje ale jest zakonczony
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+
     	}
     }
 

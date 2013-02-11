@@ -29,8 +29,10 @@ import org.activiti.engine.impl.pvm.PvmProcessDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
+import pl.nask.hsn2.framework.bus.FrameworkBus;
 import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
@@ -86,6 +88,10 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 		try {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsAccepted(taskId);
+		} catch (WorkflowJobRepositoryException e) {
+			// WST TaskAccepted: tutaj implementacja wyslania msg jak job nie istnieje
+			LOG.warn("Got TaskAccepted for non existant job (jobId={}, taskId={})", jobId, taskId);
+			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, taskId);
 		} catch (Exception e) {
 			LOG.warn("Error marking task {} in job {} as accepted", taskId, jobId);
 			LOG.warn(e.getMessage(), e);
@@ -99,9 +105,11 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsCompleted(requestId, newObjects);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot complete task.", e);
+			// LOG.error("Cannot complete task.", e);
+			// WST TaskCompleted: tutaj implementacja wyslania msg jak job nie istnieje
+			LOG.warn("Got TaskCompleted for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
+			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
-
 	}
 
 	protected WorkflowJob getJob(long jobId) throws WorkflowJobRepositoryException {
@@ -130,7 +138,10 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			// TODO: policy dependent, should be configurable (by the workflow?)
 			job.markTaskAsFailed(requestId, reason, description);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot process task error.", e);
+			// LOG.error("Cannot complete task.", e);
+			// WST TaskError: tutaj implementacja wyslania msg jak job nie istnieje
+			LOG.warn("Got TaskError for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
+			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
 	}
 
