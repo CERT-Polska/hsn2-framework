@@ -89,7 +89,6 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsAccepted(taskId);
 		} catch (WorkflowJobRepositoryException e) {
-			// WST TaskAccepted: tutaj implementacja wyslania msg jak job nie istnieje
 			LOG.warn("Got TaskAccepted for non existant job (jobId={}, taskId={})", jobId, taskId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, taskId);
 		} catch (Exception e) {
@@ -105,8 +104,6 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsCompleted(requestId, newObjects);
 		} catch (WorkflowJobRepositoryException e) {
-			// LOG.error("Cannot complete task.", e);
-			// WST TaskCompleted: tutaj implementacja wyslania msg jak job nie istnieje
 			LOG.warn("Got TaskCompleted for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
@@ -138,8 +135,6 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			// TODO: policy dependent, should be configurable (by the workflow?)
 			job.markTaskAsFailed(requestId, reason, description);
 		} catch (WorkflowJobRepositoryException e) {
-			// LOG.error("Cannot complete task.", e);
-			// WST TaskError: tutaj implementacja wyslania msg jak job nie istnieje
 			LOG.warn("Got TaskError for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
