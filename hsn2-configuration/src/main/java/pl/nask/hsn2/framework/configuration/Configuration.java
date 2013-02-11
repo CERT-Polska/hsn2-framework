@@ -156,4 +156,28 @@ public class Configuration {
 	public String[] getAMQPObjectStoreQueueNames() {
 		return new String[] { getAMQPObjectStoreQueueLow(), getAMQPObjectStoreQueueHigh() };
 	}
+
+	public boolean getJobsSuppressorEnabled() throws ConfigurationException {
+		boolean value;
+		if ("true".equalsIgnoreCase(internalConfiguration.getString("jobs.suppressor.enabled"))) {
+			value = true;
+		} else if ("false".equalsIgnoreCase(internalConfiguration.getString("jobs.suppressor.enabled"))) {
+			value = false;
+		} else {
+			throw new ConfigurationException("Illegal 'jobs.suppressor.enabled' value. Has to be 'true' or 'false'.");
+		}
+		return value;
+	}
+	
+	public int getJobsSuppressorBufferSize() throws ConfigurationException {
+		try {
+			int number = Integer.parseInt(internalConfiguration.getString("jobs.suppressor.buffer.size"));
+			if (number < 1) {
+				throw new ConfigurationException("Illegal 'jobs.suppressor.buffer.size' value. Has to be positive number.");
+			}
+			return number;
+		} catch (NumberFormatException e) {
+			throw new ConfigurationException("Cannot parse 'jobs.suppressor.buffer.size' value. Has to be positive number.", e);
+		}
+	}
 }

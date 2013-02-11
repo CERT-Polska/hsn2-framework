@@ -22,6 +22,7 @@ package pl.nask.hsn2.framework.workflow.job;
 import java.util.Set;
 
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 
 /**
  * This is job management operations interface.
@@ -29,13 +30,12 @@ import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
  *
  */
 public interface WorkflowJob extends WorkflowJobInfo {
-
 	/**
 	 * Starts the job and gives them provided identifier.
 	 * 
 	 * @param jobId Identifier for the job.
 	 */
-    void start(long jobId);
+    void start(long jobId, JobSuppressorHelper jobSuppressorHelper);
 
     /**
      * Marks specified task as accepted by a service.
@@ -60,7 +60,7 @@ public interface WorkflowJob extends WorkflowJobInfo {
      * 
      * @param requestId Failed task identifier.
      * @param reason Category reason why task failed.
-     * @param description Detailed description wyh task failed.
+     * @param description Detailed description why task failed.
      */
     void markTaskAsFailed(int requestId, TaskErrorReasonType reason, String description);
 

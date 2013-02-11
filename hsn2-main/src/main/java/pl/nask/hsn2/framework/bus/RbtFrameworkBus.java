@@ -19,6 +19,8 @@
 
 package pl.nask.hsn2.framework.bus;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +62,7 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 	private static final String SERVICE_QUEUE_PERFIX = "srv-";
 	private static final String SERVICE_LOW_PRIORITY_SUFFIX = ":l";
 	private static final String SERVICE_HIGH_PRIORITY_SUFFIX = ":h";
+	private static final long ONE_MINUTE = 60 * 1000;
 	
 	private static final MessageSerializer<Operation> DEFAULT_SERIALIZER = new ProtoBufMessageSerializer();
 	private static final CommandDispatcher DEFAULT_COMMAND_DISPATCHER = new DefaultCommandDispatcher(
@@ -83,7 +86,9 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 	
 	private boolean running = false;
 	private final Object mutex;
-	
+
+	private final List<JobReminderData> jobReminders = Collections.synchronizedList(new ArrayList<JobReminderData>());
+
 	/**
 	 * Default constructor.
 	 * 
@@ -272,5 +277,45 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 			servicesDestinations.put(s, new RbtDestination(exchange, routingKey));
 		}
 		return servicesDestinations;
+	}
+
+	@Override
+	public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
+		if (jobEventsNotifier == null) {
+			LOGGER.debug("Job events notifier not enabled, will not inform. (jobId={}, taskId={})", jobId, offendingTask);
+			return;
+		}
+
+		synchronized (jobReminders) {
+			// Cut off old reminders.
+			long now = System.currentTimeMillis();
+			int index = Collections.binarySearch(jobReminders, now - ONE_MINUTE);
+			if (index < 0) {
+				index = -index - 1;
+			} else {
+				index++;
+			}
+			jobReminders.subList(0, index).clear();
+
+			// Now only reminders from last minute left. Search for job id.
+			JobReminderData reminderFound = null;
+			for (JobReminderData tempReminder : jobReminders) {
+				if (tempReminder.getJobId() == jobId) {
+					reminderFound = tempReminder;
+					break;
+				}
+			}
+
+			// Proceed with reminder sending if needed.
+			if (reminderFound == null) {
+				// Reminder not found, sending new one.
+				jobReminders.add(new JobReminderData(jobId, now));
+				LOGGER.debug("Reminder not found, sending new one. (jobId={}, taskId={})", jobId, offendingTask);
+				jobEventsNotifier.jobFinishedReminder(jobId, status, offendingTask);
+			} else {
+				// Reminder found, ignore current one.
+				LOGGER.debug("Reminder found, ignore current one. (jobId={}, taskId={})", jobId, offendingTask);
+			}
+		}
 	}
 }
