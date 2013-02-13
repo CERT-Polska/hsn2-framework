@@ -209,11 +209,11 @@ public class Main implements Daemon {
 	}
 
 	private void initLogging() {
-	    if(commandLineParams.hasOption("logfile")){
-	        LoggerManager.changeLog4jProperty("log4j.appender.PRIMARY.file", commandLineParams.getOptionValue("logfile"));
+	    if(commandLineParams.hasOption("logFile")){
+	        LoggerManager.changeLog4jProperty("log4j.appender.PRIMARY.file", commandLineParams.getOptionValue("logFile"));
 	    }
-	    if(commandLineParams.hasOption("debuglevel")){
-	        LoggerManager.changeLogLevel(commandLineParams.getOptionValue("debuglevel"));
+	    if(commandLineParams.hasOption("logLevel")){
+	        LoggerManager.changeLogLevel(commandLineParams.getOptionValue("logLevel"));
 	    }
 	    logger = LoggerFactory.getLogger(Main.class);
 	}
