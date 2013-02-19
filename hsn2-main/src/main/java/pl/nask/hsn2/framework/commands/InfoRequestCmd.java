@@ -19,6 +19,8 @@
 
 package pl.nask.hsn2.framework.commands;
 
+import org.activiti.engine.impl.util.json.JSONObject;
+
 import pl.nask.hsn2.bus.dispatcher.Command;
 import pl.nask.hsn2.bus.dispatcher.CommandContext;
 import pl.nask.hsn2.bus.dispatcher.CommandExecutionException;
@@ -80,7 +82,8 @@ public class InfoRequestCmd implements Command<InfoRequest> {
         }
         objDataBuilder.addStringAttribute("job_workflow_name", workflowJobInfo.getWorkflowName());
         objDataBuilder.addStringAttribute("job_workflow_revision", workflowJobInfo.getWorkflowRevision());
-        objDataBuilder.addStringAttribute("job_custom_params", workflowJobInfo.getUserConfig().toString());
+        //objDataBuilder.addStringAttribute("job_custom_params", workflowJobInfo.getUserConfig().toString());
+        objDataBuilder.addStringAttribute("job_custom_params", new JSONObject(workflowJobInfo.getUserConfig()).toString());
 
 		objDataBuilder.addMaps("task_count_", workflowJobInfo
 				.getTasksStatistics().getStarted(), workflowJobInfo
