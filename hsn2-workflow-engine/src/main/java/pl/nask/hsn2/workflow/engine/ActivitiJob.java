@@ -19,7 +19,9 @@
 
 package pl.nask.hsn2.workflow.engine;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -55,7 +57,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     private TaskErrorReasonType failureReason;
     private boolean running = false;
-    private String failureDescription;
+    private Map<String, Integer> errorMessages;
 
     private Map<String, Properties> userConfig;
 
@@ -202,11 +204,10 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     	if (running) {
     		ExecutionWrapper exec = findExecutionForTaskId(requestId);
     		try {
-    			this.failureDescription = description;
+    			addErrorMessage(description);
     			exec.signal("taskFailed", new Object[] {requestId, reason, description});
     		} catch(Exception e) {
     			this.failureReason = reason;
-    			this.failureDescription = description;
     			this.lastActiveStepName = getActiveStepName();
     			LOGGER.info("Job failed (jobId={}, taskId={}, stepName={}, reason={}, errorMsg={})", new Object[] {jobId, requestId, this.lastActiveStepName, reason, description});
     			processInstance.deleteCascade(description);
@@ -222,6 +223,19 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     	}
     }
+
+	private void addErrorMessage(String msg) {
+		if (errorMessages == null) {
+			errorMessages = new HashMap<>();
+		}
+		Integer i = errorMessages.get(msg);
+		if (i == null) {
+			i = 1;
+		} else {
+			i++;
+		}
+		errorMessages.put(msg, i);
+	}
 
     private void finishJob(){
     	this.endTime  = System.currentTimeMillis();
@@ -266,7 +280,14 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     @Override
     public synchronized String getErrorMessage() {
-        return failureDescription;
+    	StringBuilder sb = new StringBuilder();
+    	for (Entry<String, Integer> errMsgEntry : errorMessages.entrySet()) {
+    		if (sb.length() != 0) {
+    			sb.append("; ");
+    		}
+			sb.append(errMsgEntry.getKey()).append(" (").append(errMsgEntry.getValue()).append(")");
+		}
+        return sb.toString();
     }
 
     @Override
