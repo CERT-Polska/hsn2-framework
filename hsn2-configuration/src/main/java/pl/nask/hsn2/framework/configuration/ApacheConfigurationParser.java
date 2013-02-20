@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.io.IOUtils;
 
 public class ApacheConfigurationParser implements ConfigurationReader<PropertiesConfiguration> {
 
@@ -33,15 +34,20 @@ public class ApacheConfigurationParser implements ConfigurationReader<Properties
     public PropertiesConfiguration parse(String filePath) throws FileNotFoundException,
             IOException, ConfigurationException {
         File conf = new File(filePath);
-        InputStream is;
-        if (conf.exists()) {
-            is = new FileInputStream(conf);
-        } else {
-            is = getClass().getResourceAsStream("/"+filePath);
-            if (is == null)
-                throw new FileNotFoundException("classpath:" + filePath);
+        InputStream is = null;
+        try{
+	        if (conf.exists()) {
+	            is = new FileInputStream(conf);
+	        } else {
+	            is = getClass().getResourceAsStream("/"+filePath);
+	            if (is == null)
+	                throw new FileNotFoundException("classpath:" + filePath);
+	        }
+	        return parse(is);
         }
-        return parse(is);
+        finally{
+        	IOUtils.closeQuietly(is);
+        }
     }
 
     @Override
@@ -54,5 +60,4 @@ public class ApacheConfigurationParser implements ConfigurationReader<Properties
         }
         return pconf;
     }
-
 }
