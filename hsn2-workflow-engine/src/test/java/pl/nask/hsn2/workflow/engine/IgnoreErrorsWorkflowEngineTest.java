@@ -83,10 +83,6 @@ public class IgnoreErrorsWorkflowEngineTest {
 		Assert.assertEquals(job.isEnded(), true);
 	}
 
-	
-	
-	
-	
 	@Test(dataProvider="dataProvider")
 	public void noErrorsIgnored(TaskErrorReasonType err,String name) throws WorkflowEngineException {
 		
@@ -104,35 +100,20 @@ public class IgnoreErrorsWorkflowEngineTest {
 		activityEngine.taskError(jobId, taskId, error, name);
 		
 		Assert.assertEquals(job.getStatus(),JobStatus.FAILED);
-		Assert.assertEquals(job.getErrorMessage(), name);
+		Assert.assertEquals(job.getErrorMessage(), name + " (1)");
 
 	}
-	
-	
-	
+
 	@DataProvider(name="dataProvider")
 	public Object[][] dataProvider() {
-		
 		Object[][] ret = new Object[TaskErrorReasonType.values().length][2];
 		for (int i=0; i < TaskErrorReasonType.values().length; i++) {
 			ret[i][0] = TaskErrorReasonType.values()[i];
 			ret[i][1] = TaskErrorReasonType.values()[i].name();
 		}
-		
-//		return new Object[][] {
-//				{TaskErrorReasonType.DEFUNCT,TaskErrorReasonType.DEFUNCT.name()},
-//				{TaskErrorReasonType.OBJ_STORE,TaskErrorReasonType.OBJ_STORE.name()},
-//				{TaskErrorReasonType.DATA_STORE,TaskErrorReasonType.DATA_STORE.name()},
-//				{TaskErrorReasonType.PARAMS,TaskErrorReasonType.PARAMS.name()},
-//				{TaskErrorReasonType.RESOURCE,TaskErrorReasonType.RESOURCE.name()},
-//				{TaskErrorReasonType.INPUT,TaskErrorReasonType.INPUT.name()}
-//		};
-		
 		return ret;
 	}
-	
-	
-	
+
 	@Test(dataProvider="dataProvider")
 	public void twoProcessesWithIgnored(TaskErrorReasonType err,String n) throws WorkflowEngineException {
 		
