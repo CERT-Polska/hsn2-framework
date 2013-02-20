@@ -117,7 +117,7 @@ public class DefaultTasksStatistics implements TasksStatistics {
 		return waitingTasksRequestsCount.get();
 	}
 
-	public void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber) {
+	public synchronized void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber) {
 		freeTasksBufferCount.set(freeBufferSpaces);
 		waitingTasksRequestsCount.set(waitingTasksNumber);
 	}
