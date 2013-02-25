@@ -77,7 +77,7 @@ public class InfoRequestCmd implements Command<InfoRequest> {
         }
         objDataBuilder.addIntAttribute("job_started_subprocess_count", workflowJobInfo.getTasksStatistics().getSubprocessesStarted());
 
-        if (workflowJobInfo.getErrorMessage() != null) {
+        if (workflowJobInfo.isErrorMessagesReceived()) {
         	objDataBuilder.addStringAttribute("job_error_message", workflowJobInfo.getErrorMessage());
         }
         objDataBuilder.addStringAttribute("job_workflow_name", workflowJobInfo.getWorkflowName());
