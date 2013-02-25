@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
 import pl.nask.hsn2.activiti.behavior.HSNBehavior;
 import pl.nask.hsn2.bus.api.BusManager;
+import pl.nask.hsn2.bus.api.TimeoutException;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.ObjectData;
@@ -57,7 +58,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     private TaskErrorReasonType failureReason;
     private boolean running = false;
-    private Map<String, Integer> errorMessages;
+    private Map<String, Integer> errorMessages = new HashMap<>();
 
     private Map<String, Properties> userConfig;
 
@@ -82,29 +83,33 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             throw new IllegalStateException("Job already started");
         } else {
             processInstance = processDefinition.createProcessInstance();
-            this.objectDataId = createInitialObject(jobId);
-            ExecutionWrapper utils = new ExecutionWrapper(processInstance);
-            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats, jobSuppressorHelper);
-            this.startTime  = System.currentTimeMillis();
-            processInstance.start();
+            
+            startTime = System.currentTimeMillis();
             this.jobId = jobId;
-            this.running = true;
-            ((FrameworkBus)BusManager.getBus()).jobStarted(jobId);
-            LOGGER.info("Job started (jobId={}, userConfig={}, workflowDefinition={}, initialObjectId={}", new Object[] {jobId, userConfig, workflowDefinitionDescriptor, objectDataId});
+            
+            try{
+	            this.objectDataId = createInitialObject(jobId);
+	            ExecutionWrapper utils = new ExecutionWrapper(processInstance);
+	            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats, jobSuppressorHelper);
+	            processInstance.start();
+	            this.running = true;
+	            ((FrameworkBus)BusManager.getBus()).jobStarted(jobId);
+	            LOGGER.info("Job started (jobId={}, userConfig={}, workflowDefinition={}, initialObjectId={}", new Object[] {jobId, userConfig, workflowDefinitionDescriptor, objectDataId});
+            }
+            catch(ObjectStoreConnectorException e){
+            	failureReason = TaskErrorReasonType.OBJ_STORE;
+            	endTime = System.currentTimeMillis();
+            }
         }
     }
 
-    private long createInitialObject(long jobId) {
-    	try {
-	        return ((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendObjectStoreData(jobId, new ObjectData());
-    	} catch (ObjectStoreConnectorException e) {
-    		throw new IllegalStateException(e);
-    	}
+    private long createInitialObject(long jobId) throws ObjectStoreConnectorException {
+    	return ((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendObjectStoreData(jobId, new ObjectData());
     }
 
     @Override
-    public synchronized boolean isEnded() {
-        return processInstance.isEnded();
+    public boolean isEnded() {
+        return !running;
     }
 
     @Override
@@ -195,7 +200,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
         }
     }
 
-    public synchronized long getId() {
+    public long getId() {
         return jobId;
     }
 
@@ -225,9 +230,6 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
 	private void addErrorMessage(String msg) {
-		if (errorMessages == null) {
-			errorMessages = new HashMap<>();
-		}
 		Integer i = errorMessages.get(msg);
 		if (i == null) {
 			i = 1;
@@ -277,9 +279,14 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             return lastActiveStepName;
         }
     }
-
+    
     @Override
-    public synchronized String getErrorMessage() {
+    public boolean isErrorMessagesReceived(){
+    	return !errorMessages.isEmpty();
+    }
+    
+    @Override
+    public String getErrorMessage() {
     	StringBuilder sb = new StringBuilder();
     	for (Entry<String, Integer> errMsgEntry : errorMessages.entrySet()) {
     		if (sb.length() != 0) {
@@ -291,17 +298,17 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized Map<String, Properties> getUserConfig() {
+    public Map<String, Properties> getUserConfig() {
         return userConfig;
     }
 
     @Override
-    public synchronized long getStartTime() {
+    public long getStartTime() {
         return startTime;
     }
 
     @Override
-    public synchronized long getEndTime() {
+    public long getEndTime() {
         return endTime;
     }
 
@@ -312,17 +319,17 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized String getWorkflowRevision() {
+    public String getWorkflowRevision() {
         return workflowDefinitionDescriptor.getId();
     }
     
     @Override
-    public synchronized String getWorkflowName() {
+    public String getWorkflowName() {
     	return workflowDefinitionDescriptor.getName();
     }
 
     @Override
-    public synchronized DefaultTasksStatistics getTasksStatistics() {
+    public DefaultTasksStatistics getTasksStatistics() {
         return stats;
     }
 }

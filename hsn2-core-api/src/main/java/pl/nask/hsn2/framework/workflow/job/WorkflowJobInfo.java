@@ -105,7 +105,7 @@ public interface WorkflowJobInfo {
     String getWorkflowName();
 
     /**
-     * Gets a revision number of workflow which job's run againt of.
+     * Gets a revision number of workflow which job's run again of.
      * 
      * @return Revision of the workflow.
      */
@@ -118,4 +118,13 @@ public interface WorkflowJobInfo {
 	 *         many tasks of the given type were created
 	 */
     TasksStatistics getTasksStatistics();
+
+    /**
+	 * Checks if job has any error messages.
+	 * 
+	 * @return <code>true</code> if any error messages have been received, <code>false</code>
+	 *         otherwise.
+	 * 
+	 */
+	boolean isErrorMessagesReceived();
 }
