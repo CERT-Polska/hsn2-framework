@@ -280,6 +280,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     @Override
     public synchronized String getErrorMessage() {
+    	if (errorMessages==null) { return null; }
     	StringBuilder sb = new StringBuilder();
     	for (Entry<String, Integer> errMsgEntry : errorMessages.entrySet()) {
     		if (sb.length() != 0) {
