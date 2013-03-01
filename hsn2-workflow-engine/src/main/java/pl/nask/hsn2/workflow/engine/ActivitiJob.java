@@ -19,12 +19,11 @@
 
 package pl.nask.hsn2.workflow.engine;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.activiti.engine.impl.pvm.PvmExecution;
 import org.activiti.engine.impl.pvm.PvmProcessDefinition;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
 import pl.nask.hsn2.activiti.behavior.HSNBehavior;
 import pl.nask.hsn2.bus.api.BusManager;
-import pl.nask.hsn2.bus.api.TimeoutException;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.ObjectData;
@@ -95,6 +93,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 	            processInstance.start();
 	            this.running = true;
 	            ((FrameworkBus)BusManager.getBus()).jobStarted(jobId);
+	            updateJobDetails();
 	            LOGGER.info("Job started (jobId={}, userConfig={}, workflowDefinition={}, initialObjectId={}", new Object[] {jobId, userConfig, workflowDefinitionDescriptor, objectDataId});
             }
             catch(ObjectStoreConnectorException e){
@@ -115,7 +114,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized JobStatus getStatus() {
+    public JobStatus getStatus() {
         if (isFailed()) {
             return JobStatus.FAILED;
         } else if (isAborted()) {
@@ -181,10 +180,11 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
                     for (Long objectId: newObjects) {
                         execution.subprocess(workflowDefinitionDescriptor, objectId);
                     }
-                    resume();
+                    resumeAndUpdateJobDetails();
                 }
                 try {
                 	execution.signal("completeTask", requestId);
+                	updateJobDetails();
                 } catch (Exception e) {
                 	 LOGGER.error("Error processing job", e);
                      markTaskAsFailed(requestId, TaskErrorReasonType.DEFUNCT, e.getMessage());
@@ -213,6 +213,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     		try {
     			addErrorMessage(description);
     			exec.signal("taskFailed", new Object[] {requestId, reason, description});
+    			updateJobDetails();
     		} catch(Exception e) {
     			this.failureReason = reason;
     			this.lastActiveStepName = getActiveStepName();
@@ -244,7 +245,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     private void finishJob(){
     	this.endTime  = System.currentTimeMillis();
 		this.running = false;
-
+		updateJobDetails();
         ExecutionWrapper utils = new ExecutionWrapper(processInstance);
         utils.getProcessContext().removeJobSuppressorHelper();
 
@@ -259,26 +260,31 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     
     @Override
     public synchronized void resume() {
-        if (running) {
-            ExecutionWrapper wrapper = new ExecutionWrapper(processInstance);
-            try {
-                wrapper.signal("resume");
-                updateActiveStepName();
-            } catch (Exception e) {
-                LOGGER.error("Error processing job", e);
-                markTaskAsFailed(wrapper.getTaskId() == null ? -1 : wrapper.getTaskId(), TaskErrorReasonType.DEFUNCT, e.getMessage());
-            }
-        } else {
-            LOGGER.debug("Job (id={}) is not running. Can not resume it's processes", jobId);
-        }
+    	if (running) {
+    		resumeAndUpdateJobDetails();
+    	} else {
+    		LOGGER.debug("Job (id={}) is not running. Can not resume it's processes", jobId);
+    	}
     }
 
-    private void updateActiveStepName(){
+    private void resumeAndUpdateJobDetails() {
+    	ExecutionWrapper wrapper = new ExecutionWrapper(processInstance);
+    	try {
+    		wrapper.signal("resume");
+    		updateJobDetails();
+    	} catch (Exception e) {
+    		LOGGER.error("Error processing job", e);
+    		markTaskAsFailed(wrapper.getTaskId() == null ? -1 : wrapper.getTaskId(), TaskErrorReasonType.DEFUNCT, e.getMessage());
+    	}
+    }
+
+	private void updateJobDetails(){
     	ActivityImpl activity = (ActivityImpl) processInstance.getActivity();
         if (activity != null) {
             HSNBehavior behavior = (HSNBehavior) activity.getActivityBehavior();
             lastActiveStepName = behavior.getStepName();
         }
+        running = !processInstance.isEnded();
     }
     
     @Override
