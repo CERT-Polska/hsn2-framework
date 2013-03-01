@@ -154,7 +154,7 @@ public class WorkflowEngineTest {
         //int taskId = getLastTaskId();
         int taskId = bus.getLastTaskId();
         job.markTaskAsCompleted(taskId, null);
-        Assert.assertEquals("service(service2)", job.getActiveStepName());
+        Assert.assertEquals(job.getActiveStepName(), "service(service2)");
         //Assert.assertFalse(taskId == getLastTaskId());
         Assert.assertFalse(taskId == bus.getLastTaskId());
     }
@@ -166,7 +166,7 @@ public class WorkflowEngineTest {
         WorkflowJob job = engine.getJob(jobId);
         Assert.assertEquals("start", job.getActiveStepName());
         job.resume();
-        Assert.assertEquals("service(service)", job.getActiveStepName());
+        Assert.assertEquals(job.getActiveStepName(), "service(service)");
     }
 
     @Test
