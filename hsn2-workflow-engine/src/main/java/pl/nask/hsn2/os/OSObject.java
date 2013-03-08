@@ -31,6 +31,7 @@ public class OSObject implements Map<String, Object>, Comparable<OSObject>, Ognl
     private Map<String, Object> object;
     protected final ObjectStore objectStore;
     private final long id;
+	private static int	rand = 0;
 
     public OSObject(ObjectStore os, long id) {
         this.id = id;
@@ -168,4 +169,11 @@ public class OSObject implements Map<String, Object>, Comparable<OSObject>, Ognl
     public List<OSObject> findByValue(String attributeName, OSObject value) {
         return objectStore.findByValue(attributeName, value);
     }
+
+	@Override
+	public String random(List<String>l) {
+		if ( l.size() > 0)
+			return l.get(rand++%l.size());
+		return null;
+	}
 }

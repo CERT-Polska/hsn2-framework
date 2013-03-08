@@ -31,6 +31,7 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
 
     private final ObjectStore objectStore;
     private OSObject current;
+    private static int rand = 0;
 
     public OgnlRootObjectImpl(ObjectStore objectStore, long osId) {
         this.objectStore = objectStore;
@@ -64,4 +65,11 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
     public OSObject getCurrent() {
         return current;
     }
+
+	@Override
+	public String random(List<String>l) {
+		if ( l.size() > 0)
+			return l.get(rand++%l.size());
+		return null;
+	}
 }
