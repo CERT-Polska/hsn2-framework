@@ -20,6 +20,7 @@
 package pl.nask.hsn2.expressions;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import pl.nask.hsn2.os.OSObject;
 import pl.nask.hsn2.os.ObjectStore;
@@ -31,7 +32,7 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
 
     private final ObjectStore objectStore;
     private OSObject current;
-    private static int rand = 0;
+    private static AtomicInteger rand = new AtomicInteger();
 
     public OgnlRootObjectImpl(ObjectStore objectStore, long osId) {
         this.objectStore = objectStore;
@@ -68,8 +69,11 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
 
 	@Override
 	public String random(List<String>l) {
-		if ( l.size() > 0)
-			return l.get(rand++%l.size());
+		if ( l.size() > 0) {
+			if ( rand.get() == Integer.MAX_VALUE)
+				rand.set(rand.get()%l.size());
+			return l.get(rand.getAndIncrement()%l.size());
+		}
 		return null;
 	}
 }
