@@ -94,7 +94,7 @@ public class Main implements Daemon {
         try {
             repo = new GitWorkflowRepository(configuration.getWorkflowRepositoryPath(), true);
         } catch (WorkflowRepoException e) {
-            throw new ConfigurationException("Something is wrong with workflow repository. Is the path valid? : " + configuration.getWorkflowRepositoryPath(), e);
+            throw new ConfigurationException("Something is wrong with workflow repository at:'" + configuration.getWorkflowRepositoryPath()+"':"+e.getMessage());
         }
     	WorkflowManager.setWorkflowDefinitionManager(new ActivitiWorkflowDefinitionManager());
         WorkflowManager.setKnownServiceNames(configuration.getAMQPServicesNames());
@@ -247,6 +247,10 @@ public class Main implements Daemon {
     			initWorkflowManager();
     		} catch (BusException e) {
     			instance.logger.error("Framework cannot attach to the bus. Is Rabbit MQ working?");
+    			instance.stop();
+    			System.exit(1);
+    		} catch (ConfigurationException e) {
+    			instance.logger.error("Configuration Error:",e);
     			instance.stop();
     			System.exit(1);
     		} catch (Throwable tw) {

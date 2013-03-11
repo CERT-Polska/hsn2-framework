@@ -132,9 +132,43 @@ public class GitWorkflowRepository implements WorkflowRepository {
 			throw new WorkflowRepoException(e.getMessage(), e);
 		}
 		if (!stat.isClean()) {
-			throw new WorkflowRepoException(
-					"Git repository is not clean, so is invalid");
+			StringBuilder sb = prepareErrMsg(stat);
+			throw new WorkflowRepoException(sb.toString());
 		}
+	}
+
+	private StringBuilder prepareErrMsg(Status stat) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\n---------");
+		if (!stat.getAdded().isEmpty()) {
+			sb.append("\n * uncommited files:")
+			.append(stat.getAdded()).append(".");
+		}
+		if (!stat.getChanged().isEmpty()) {
+			sb.append("\n * changed files:")
+			.append(stat.getChanged()).append(".");
+		}
+		if (!stat.getConflicting().isEmpty()) {
+			sb.append("\n * conflicting files:")
+			.append(stat.getConflicting()).append(".");
+		}
+		if (!stat.getMissing().isEmpty()) {
+			sb.append("\n * missing files:")
+			.append(stat.getMissing()).append(".");
+		}
+		if (!stat.getModified().isEmpty()) {
+			sb.append("\n * modified files:")
+			.append(stat.getModified()).append(".");
+		}
+		if (!stat.getRemoved().isEmpty()) {
+			sb.append("\n *  removed files:")
+			.append(stat.getRemoved()).append(".");
+		}
+		if (!stat.getUntracked().isEmpty()) {
+			sb.append("\n * untracked files:")
+			.append(stat.getUntracked()).append(".");
+		}
+		return sb.append("\n---------");
 	}
 
 	/**
