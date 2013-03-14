@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ThreadLocalRandom;
 
 /*	
  * Comparable is implemented due to a bug in OGNL which forces a non-numeric object to implement comparable for ==/
@@ -32,7 +32,7 @@ public class OSObject implements Map<String, Object>, Comparable<OSObject>, Ognl
     private Map<String, Object> object;
     protected final ObjectStore objectStore;
     private final long id;
-	private static AtomicInteger rand = new AtomicInteger();
+
 
     public OSObject(ObjectStore os, long id) {
         this.id = id;
@@ -174,9 +174,7 @@ public class OSObject implements Map<String, Object>, Comparable<OSObject>, Ognl
 	@Override
 	public String random(List<String>l) {
 		if ( l.size() > 0) {
-			if ( rand.get() == Integer.MAX_VALUE)
-				rand.set(rand.get()%l.size());
-			return l.get(rand.getAndIncrement()%l.size());
+			return l.get(ThreadLocalRandom.current().nextInt(l.size()));
 		}
 		return null;
 	}
