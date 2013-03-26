@@ -110,4 +110,11 @@ public class MockedBus implements FrameworkBus {
 	@Override
 	public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
 	}
+
+	@Override
+	public void releaseResources() {
+		// TODO Auto-generated method stub
+		throw new IllegalStateException("Not implemented!.");
+		
+	}
 }
