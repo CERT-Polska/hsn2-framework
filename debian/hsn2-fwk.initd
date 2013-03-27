@@ -58,53 +58,9 @@ use_jsvc_wrapper () {
 		
 return 0
 }
-
-
-use_start_stop_daemon() {
-	log_daemon_msg "using start-stop-daemon..."
-	case "$1" in
-	start)
-		log_daemon_msg "Starting" "$NAME"
-		cd "$HSN2_COMPONENT_HOME"
-		# workaround (see redmine #6587, #6324)
-		start-stop-daemon --start --quiet --oknodo --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- $HSN2_JVM_PARAMS -jar $HSN2_COMPONENT_HOME/hsn2-$HSN2_COMPONENT.jar $HSN2_COMPONENT_PARAMS
-		sleep 5
-		PID=`cat $PIDFILE`
-		TEST=`ps ax | grep $PID | grep java | sed -e 's/^ *//' | cut -d' ' -f1`
-		if [ -n "$TEST" ]; then
-		# original code
-		#if start-stop-daemon --start --quiet --oknodo --background --make-pidfile --pidfile $PIDFILE --exec /usr/bin/java -- -jar $HSN2_COMPONENT_HOME/hsn2-$HSN2_COMPONENT.jar $HSN2_COMPONENT_PARAMS; then
-			log_end_msg 0
-		else
-			log_end_msg 1
-			echo "" > $PIDFILE
-			return 1
-		fi
-		;;
-
-	stop)
-		log_daemon_msg "Stopping" "$NAME"
-		if start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE; then
-			log_end_msg 0
-			echo "" > $PIDFILE
-			#rm -f $PIDFILE
-		else
-			log_end_msg 1
-		fi
-		;;
-
-	status)
-		status_of_proc -p $PIDFILE "$JAVA" "$NAME" && return 0 || return $?
-		;;
-	esac
-return 0
-
-}
 	
-if [ -z "$JSVCBIN"  -o -z "$JAVA_HOME" ]; then
-	use_start_stop_daemon $@
-else
-	use_jsvc_wrapper $@
-fi
+use_jsvc_wrapper $@
 
 exit $?
+
+
