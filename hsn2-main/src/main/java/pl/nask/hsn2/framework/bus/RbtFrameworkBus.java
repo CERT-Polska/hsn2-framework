@@ -54,6 +54,7 @@ import pl.nask.hsn2.bus.rabbitmq.endpoint.RbtEndPointFactory;
 import pl.nask.hsn2.bus.recovery.Recoverable;
 import pl.nask.hsn2.bus.serializer.MessageSerializer;
 import pl.nask.hsn2.bus.serializer.protobuf.ProtoBufMessageSerializer;
+import pl.nask.hsn2.framework.core.WorkflowManager;
 
 public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
@@ -227,10 +228,17 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 	@Override
 	public void recovery() {
+		boolean recover = false;
 		try {
 			if (!endPointFactory.isConnectionValid()) {
-				LOGGER.info("Bus problem occured, trying to recover...");
 				stop();
+				if (!recover) {			
+					LOGGER.error("Cannot determine cause connection failure. Cannot reliable recover");
+					LOGGER.error("Unfinished jobs:{}.shutting down.",WorkflowManager.getInstance().getWorkflowJobs().size() ) ;
+					System.exit(1);
+				} else {
+					LOGGER.info("Bus problem occured, trying to recover...");
+				}
 				setup(false);
 				start();
 			}
