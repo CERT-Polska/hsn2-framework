@@ -55,6 +55,7 @@ import pl.nask.hsn2.bus.recovery.Recoverable;
 import pl.nask.hsn2.bus.serializer.MessageSerializer;
 import pl.nask.hsn2.bus.serializer.protobuf.ProtoBufMessageSerializer;
 import pl.nask.hsn2.framework.core.WorkflowManager;
+import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
 public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
@@ -233,8 +234,8 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 			if (!endPointFactory.isConnectionValid()) {
 				stop();
 				if (!recover) {			
-					LOGGER.error("Cannot determine cause connection failure. Cannot reliable recover");
-					LOGGER.error("Unfinished jobs:{}.shutting down.",WorkflowManager.getInstance().getWorkflowJobs().size() ) ;
+					LOGGER.error("Connection failure. Cannot reliable recover.");
+					LOGGER.error("Unfinished jobs:{}.shutting down.",WorkflowManager.getInstance().getWorkflowJobs()) ;
 					System.exit(1);
 				} else {
 					LOGGER.info("Bus problem occured, trying to recover...");

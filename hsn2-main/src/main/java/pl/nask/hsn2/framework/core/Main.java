@@ -297,7 +297,7 @@ public class Main implements Daemon {
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
+		logger.info("Framework stopped.");
 		
 	}
 }
