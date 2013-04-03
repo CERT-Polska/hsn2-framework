@@ -54,6 +54,8 @@ import pl.nask.hsn2.bus.rabbitmq.endpoint.RbtEndPointFactory;
 import pl.nask.hsn2.bus.recovery.Recoverable;
 import pl.nask.hsn2.bus.serializer.MessageSerializer;
 import pl.nask.hsn2.bus.serializer.protobuf.ProtoBufMessageSerializer;
+import pl.nask.hsn2.framework.core.WorkflowManager;
+import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
 public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
@@ -98,10 +100,10 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 		this.config = config;
 		this.endPointFactory = new RbtEndPointFactory();
 		this.mutex = this;
-		setup();
+		setup(true);
 	}
 
-	private void setup() throws BusException {
+	private void setup(boolean purgeQueues) throws BusException {
 		this.endPointFactory
 			.setNumberOfconsumerThreads(config.getAmqpConsumersNumber())
 			.setServerAddress(config.getAMQPServerAddress())
@@ -113,6 +115,7 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 		String exchangeMonitoringName = config.getAmqpExchangeMonitoringName();
 		String exchangeCommonName = config.getAmqpExchangeCommonName();
 		String exchangeServicesName = config.getAmqpExchangeServicesName();
+		LOGGER.info("Creating exchanges:{}",new Object[]{exchangeCommonName,exchangeMonitoringName,exchangeServicesName});
 		RbtUtils.createExchanges(endPointFactory.getConnection(), exchangeCommonName, exchangeServicesName, exchangeMonitoringName);
 
 		// services queues
@@ -132,8 +135,8 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 		// deadletter queue
 		queues.add("deadletter");
 
-		LOGGER.debug("Creating queues: {}", queues);
-		RbtUtils.createQueues(endPointFactory.getConnection(), exchangeServicesName, queues.toArray(new String[queues.size()]), true);
+		LOGGER.info("Creating queues ({}): {}", purgeQueues?"purging":"queues data preserved", queues);
+		RbtUtils.createQueues(endPointFactory.getConnection(), exchangeServicesName, queues.toArray(new String[queues.size()]), purgeQueues);
 	}
 
 	@Override
@@ -206,7 +209,16 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 			} catch (BusException e) {
 				// problem with closing connection, ignoring
 			}
+			objectStoreConnector.releaseResources();
+			objectStoreConnector = null;
+			
+			servicesConnector.releaseResources();
+			servicesConnector = null;
+			
+			jobEventsNotifier.releaseResources();
+			jobEventsNotifier = null;
 			running = false;
+			
 		}
 	}
 
@@ -217,11 +229,18 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 	@Override
 	public void recovery() {
+		boolean recover = false;
 		try {
 			if (!endPointFactory.isConnectionValid()) {
-				LOGGER.info("Bus problem occured, trying to recover...");
 				stop();
-				setup();
+				if (!recover) {			
+					LOGGER.error("Connection failure. Cannot reliable recover.");
+					LOGGER.error("Unfinished jobs:{}.shutting down.",WorkflowManager.getInstance().getWorkflowJobs()) ;
+					System.exit(1);
+				} else {
+					LOGGER.info("Bus problem occured, trying to recover...");
+				}
+				setup(false);
 				start();
 			}
 		} catch(BusException ex) {
@@ -267,6 +286,7 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 					DEFAULT_SERIALIZER, endPointFactory,
 					new RbtDestination(config.getAmqpExchangeMonitoringName(), ""));
 		}
+		LOGGER.info("Initialized outgoing connectors:\n\t{},\n\t{},\n\t{}",new Object[]{servicesConnector,objectStoreConnector,jobEventsNotifier});
 	}
 
 	private Map<String, RbtDestination> getServicesDestinations(String exchange, String[] serviceNames, String prefix, String suffix) {
@@ -318,4 +338,11 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 			}
 		}
 	}
+
+	@Override
+	public void releaseResources() {
+		stop();
+		
+	}
+
 }

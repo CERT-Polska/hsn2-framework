@@ -128,5 +128,7 @@ public class FullExampleTest {
 		@Override public void jobStarted(long jobId) { }
 		@Override public void jobFinished(long jobId, JobStatus status) { }
 		@Override public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {}
+		@Override public void releaseResources() { }
+		
     }
 }
