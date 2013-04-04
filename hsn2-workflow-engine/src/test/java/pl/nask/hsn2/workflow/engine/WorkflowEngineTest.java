@@ -244,6 +244,11 @@ public class WorkflowEngineTest {
 			return lastTaskId;
 		}
 		@Override public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
+		}
+		@Override
+		public void releaseResources() {
+			throw new IllegalStateException("Not implemented!.");
+			
 		}		
     }
 }

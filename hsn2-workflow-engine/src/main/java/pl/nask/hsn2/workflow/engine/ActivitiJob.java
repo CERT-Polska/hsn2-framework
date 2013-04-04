@@ -344,4 +344,16 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     public DefaultTasksStatistics getTasksStatistics() {
         return stats;
     }
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("[")
+    	.append("jobID:").append(jobId)
+    	.append(", status:").append(getStatus().name().toString())
+    	.append(", workflow name:").append(workflowDefinitionDescriptor.getName())
+    	.append(", last step:").append(lastActiveStepName)
+    	.append(", active tasks:").append(getActiveSubtasksCount())
+    	.append("]");
+    	return sb.toString();
+    }
 }
