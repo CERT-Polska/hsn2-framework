@@ -21,9 +21,9 @@ package pl.nask.hsn2.framework.configuration;
 
 import java.util.Map;
 
-import ognl.DefaultMemberAccess;
-import ognl.Ognl;
-import ognl.OgnlException;
+import org.apache.commons.ognl.DefaultMemberAccess;
+import org.apache.commons.ognl.Ognl;
+import org.apache.commons.ognl.OgnlException;
 
 public class OgnlConfigurationMapper implements ConfigurationMapper {
 
@@ -54,7 +54,7 @@ public class OgnlConfigurationMapper implements ConfigurationMapper {
         }
 
         try {
-            Map ctx = Ognl.createDefaultContext(configuration);
+            Map<String, Object> ctx = Ognl.createDefaultContext(configuration);
             Ognl.setMemberAccess(ctx, MEMBER_ACCESS);
             Ognl.setValue(mapped, ctx, configuration, value);
         } catch (OgnlException e) {

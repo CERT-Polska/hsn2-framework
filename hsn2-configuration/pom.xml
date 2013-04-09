@@ -14,9 +14,9 @@
   
   <dependencies>
   	<dependency>
-  	  <groupId>ognl</groupId>
-  	  <artifactId>ognl</artifactId>  	  
-  	</dependency>  	
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-ognl</artifactId>
+	</dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
