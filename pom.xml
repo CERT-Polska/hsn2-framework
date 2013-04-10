@@ -1,23 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <groupId>pl.nask.hsn2</groupId>
-  <artifactId>hsn2-framework</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
-  <name>HSN2 Framework :: Root</name>
-  <description>HSN 2.0 - framework</description>
-  <packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>pl.nask.hsn2</groupId>
+	<artifactId>hsn2-framework</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>HSN2 Framework :: Root</name>
+	<description>HSN 2.0 - framework</description>
+	<packaging>pom</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.jmockit>0.999.15</version.jmockit>
-		<version.testng>6.2</version.testng>
+		<version.jmockit>1.1</version.jmockit>
+		<version.testng>6.8</version.testng>
 		<version.spring>3.0.5.RELEASE</version.spring>
 		<version.slf4j>1.6.1</version.slf4j>
 		<version.commons-ognl>4.0-SNAPSHOT</version.commons-ognl>
 		<version.commons.cli>1.2</version.commons.cli>
-		<version.hsn2-bus>2.0.0-SNAPSHOT</version.hsn2-bus>
+		<version.hsn2-bus>1.0.0-SNAPSHOT</version.hsn2-bus>
+		<compiler.plugin.version>3.0</compiler.plugin.version>
+		<jar.plugin.version>2.4</jar.plugin.version>
+		<assembly.plugin.version>2.4</assembly.plugin.version>
 	</properties>
 
 	<dependencies>
@@ -40,152 +42,114 @@
 		<dependency>
 			<groupId>pl.nask.hsn2</groupId>
 			<artifactId>hsn2-commons-utils</artifactId>
-			<version>2.0.0-SNAPSHOT</version>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
 			<version>1.0.10</version>
 		</dependency>
-
 	</dependencies>
-  
-  <dependencyManagement>
-  	<dependencies>
-      <dependency>
-        <groupId>org.testng</groupId>
-        <artifactId>testng</artifactId>
-        <version>${version.testng}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-api</artifactId>
-    	<version>${version.slf4j}</version>
-      </dependency>
-      <dependency>
-    	<groupId>org.springframework</groupId>
-    	<artifactId>spring-core</artifactId>
-    	<version>${version.spring}</version>
-      </dependency>
-      <dependency>
-    	<groupId>com.googlecode.jmockit</groupId>
-    	<artifactId>jmockit</artifactId>
-    	<version>${version.jmockit}</version>
-    	<scope>test</scope>	
-      </dependency>
-      <dependency>
-  	    <groupId>ognl</groupId>
-  	    <artifactId>ognl</artifactId>
-  	    <version>${version.ognl}</version>
-  	  </dependency>
-  	  <dependency>
-	    <groupId>commons-cli</groupId>
-	    <artifactId>commons-cli</artifactId>
-	    <version>${version.commons.cli}</version>
-	  </dependency>
-  	  <dependency>
-  	  	<groupId>org.slf4j</groupId>
-  	  	<artifactId>slf4j-log4j12</artifactId>
-  	  	<version>${version.slf4j}</version>
-  	  </dependency>
-      <!-- project modules -->
-      <dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-configuration</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <!--<dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-bus</artifactId>
-      	<version>${project.version}</version>
-      </dependency>-->
-      <dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-hwl-parser</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-main</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <dependency> 
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-workflow-engine</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-core-api</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <dependency>
-      	<groupId>pl.nask.hsn2</groupId>
-      	<artifactId>hsn2-git-workflow-repo</artifactId>
-      	<version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>pl.nask.hsn2</groupId>
-        <artifactId>hsn2-commons-bus</artifactId>
-        <version>${version.hsn2-bus}</version>
-      </dependency>
-      <dependency>
-      	<groupId>org.apache.commons</groupId>
-      	<artifactId>commons-ognl</artifactId>
-      	<version>${version.commons-ognl}</version>
-      </dependency>
-  	</dependencies>
-  </dependencyManagement>
-  
-  
-  <build>
-    <plugins>
-	  <plugin>
-	    <artifactId>maven-compiler-plugin</artifactId>
-		  <configuration>
-		    <source>1.7</source>
-			<target>1.7</target>
-		  </configuration>
-		</plugin>
-		
-		
-	</plugins>
-	
-	<pluginManagement>
-	<plugins>
-	  <plugin>
-	    <artifactId>maven-compiler-plugin</artifactId>
-		  <configuration>
-			<source>1.7</source>
-			<target>1.7</target>
-			<encoding>UTF-8</encoding>
-		  </configuration>
-		</plugin>
-	</plugins>
-	</pluginManagement>
-  </build>
-   <repositories>
-      <repository>
-         <id>jmockit-svn</id>
-         <url>http://jmockit.googlecode.com/svn/maven-repo</url>
-         <releases><checksumPolicy>ignore</checksumPolicy></releases>
-      </repository>
-      <!--repository>
-         <id>activiti</id>
-         <url>http://maven.alfresco.com/nexus/content/repositories/activiti</url>
-         <releases><checksumPolicy>ignore</checksumPolicy></releases>
-      </repository-->
-   </repositories>
-  
-  <modules>
-  	<!--<module>hsn2-bus</module>-->
-  	<module>hsn2-configuration</module>
-  	<module>hsn2-workflow-engine</module>
-  	<module>hsn2-hwl-parser</module>
-  	<module>hsn2-main</module>
-  	<module>hsn2-core-api</module>
-  	<module>hsn2-git-workflow-repo</module>
-  </modules>   
-</project>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.testng</groupId>
+				<artifactId>testng</artifactId>
+				<version>${version.testng}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${version.slf4j}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${version.spring}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.googlecode.jmockit</groupId>
+				<artifactId>jmockit</artifactId>
+				<version>${version.jmockit}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>commons-cli</groupId>
+				<artifactId>commons-cli</artifactId>
+				<version>${version.commons.cli}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-log4j12</artifactId>
+				<version>${version.slf4j}</version>
+			</dependency>
+			<!-- hsn project modules below -->
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-configuration</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-hwl-parser</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-main</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-workflow-engine</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-core-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-git-workflow-repo</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>pl.nask.hsn2</groupId>
+				<artifactId>hsn2-commons-bus</artifactId>
+				<version>${version.hsn2-bus}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-ognl</artifactId>
+				<version>${version.commons-ognl}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${compiler.plugin.version}</version>
+					<configuration>
+						<source>1.7</source>
+						<target>1.7</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<modules>
+		<module>hsn2-configuration</module>
+		<module>hsn2-workflow-engine</module>
+		<module>hsn2-hwl-parser</module>
+		<module>hsn2-main</module>
+		<module>hsn2-core-api</module>
+		<module>hsn2-git-workflow-repo</module>
+	</modules>
+</project>
