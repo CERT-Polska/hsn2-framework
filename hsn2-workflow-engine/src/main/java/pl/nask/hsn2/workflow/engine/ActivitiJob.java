@@ -64,7 +64,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     private long startTime = 0;
     private long endTime = 0;
 
-    private String lastActiveStepName;
+    private String lastActiveStepName = "initialization";
     private long objectDataId;
     private DefaultTasksStatistics stats = new DefaultTasksStatistics();
 
@@ -100,6 +100,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             	failureReason = TaskErrorReasonType.OBJ_STORE;
             	addErrorMessage("Problem with connection to objectStore: " + e.getMessage());
             	endTime = System.currentTimeMillis();
+            	LOGGER.error(e.getMessage(), e);
             }
         }
     }
