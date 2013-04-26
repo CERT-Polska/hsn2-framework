@@ -56,7 +56,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     private long jobId;
 
     private TaskErrorReasonType failureReason;
-    private boolean running = false;
+    private volatile boolean running = false;
     private Map<String, Integer> errorMessages = new ConcurrentHashMap<>();
 
     private Map<String, Properties> userConfig;
