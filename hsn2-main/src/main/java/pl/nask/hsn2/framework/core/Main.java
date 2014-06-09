@@ -94,7 +94,7 @@ public class Main implements Daemon {
         try {
             repo = new GitWorkflowRepository(configuration.getWorkflowRepositoryPath(), true);
         } catch (WorkflowRepoException e) {
-            throw new ConfigurationException("Something is wrong with workflow repository at:'" + configuration.getWorkflowRepositoryPath()+"':"+e.getMessage());
+            throw new ConfigurationException("Something is wrong with workflow repository at:'" + configuration.getWorkflowRepositoryPath()+"':"+e.getMessage(),e);
         }
     	WorkflowManager.setWorkflowDefinitionManager(new ActivitiWorkflowDefinitionManager());
         WorkflowManager.setKnownServiceNames(configuration.getAMQPServicesNames());

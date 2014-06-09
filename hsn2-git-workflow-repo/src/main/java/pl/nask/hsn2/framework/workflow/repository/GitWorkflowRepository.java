@@ -190,71 +190,65 @@ public class GitWorkflowRepository implements WorkflowRepository {
 		}
 		LOGGER.debug("Repository doesn't exist, trying to create it...");
 		if (forceCreate && !directory.mkdirs()) {
-			throw new WorkflowRepoException(
-					"Workflow repository cannot be created for path: "
-							+ directory.getAbsolutePath());
+			throw new WorkflowRepoException("Workflow repository cannot be created for path: "+ directory.getAbsolutePath());
 		}
 		if (!directory.exists()) {
 			throw new WorkflowRepoException(
-					"Workflow repository desn't exist and is not forced to be created. Path: "
-							+ directory.getAbsolutePath());
+					"Workflow repository desn't exist and is not forced to be created. Path: "+ directory.getAbsolutePath());
 		}
 	}
 
 	@Override
 	public List<String> listWorkflowNames() throws WorkflowRepoException {
-		File[] files = repoDir.listFiles(filenameFilter);
-		List<String> l = new ArrayList<String>(files.length);
-		try {
-			ObjectId revId = repo.resolve(Constants.HEAD);
-			if (revId == null) {
-				throw new WorkflowRepoException(
-						"GIT repository does not exists or it does not contains any workflow files.");
+		synchronized (repo) {
+			File[] files = repoDir.listFiles(filenameFilter);
+			List<String> l = new ArrayList<String>(files.length);
+			try {
+				ObjectId revId = repo.resolve(Constants.HEAD);
+				if (revId == null) {
+					throw new WorkflowRepoException("GIT repository does not exists or it does not contains any workflow files.");
+				}
+				TreeWalk tree = new TreeWalk(repo);
+				tree.addTree(new RevWalk(repo).parseTree(revId));
+				while (tree.next()) {
+					l.add(tree.getNameString());
+				}
+			} catch (IOException ex) {
+				throw new WorkflowRepoException("Error during listing GIT repository.", ex);
 			}
-			TreeWalk tree = new TreeWalk(repo);
-			tree.addTree(new RevWalk(repo).parseTree(revId));
-			while (tree.next()) {
-				l.add(tree.getNameString());
-			}
-		} catch (IOException ex) {
-			throw new WorkflowRepoException(
-					"Error during listing GIT repository.", ex);
+			return l;
 		}
-		return l;
 	}
 
 	@Override
-	public WorkflowVersionInfo saveWorkflow(String workflowName, InputStream is)
-			throws WorkflowRepoException {
-		saveFile(workflowName, is);
-		return addToRepo(workflowName);
+	public WorkflowVersionInfo saveWorkflow(String workflowName, InputStream is) throws WorkflowRepoException {
+		synchronized (repo) {
+			saveFile(workflowName, is);
+			return addToRepo(workflowName);
+		}
 	}
 
-	private WorkflowVersionInfo addToRepo(String workflowName)
-			throws WorkflowRepoException {
+	private WorkflowVersionInfo addToRepo(String workflowName) throws WorkflowRepoException {
 		try {
 			newGit().add().addFilepattern(workflowName).call();
 			return commit("Workflow saved: " + workflowName);
 		} catch (Exception e) {
-			LOGGER.error("Error adding file ({})" + workflowName
-					+ " to the local repo ({}) : {}", new Object[] {
+			LOGGER.error("Error adding file ({}) to the local repo ({}) : {}", new Object[] {
 					workflowName, repoDir.getAbsolutePath(), e.getMessage() });
 			LOGGER.error("Exception while adding file to the local repo", e);
-			throw new WorkflowRepoException(
-					"Exception while adding file to the local repo", e);
+			throw new WorkflowRepoException("Exception while adding file to the local repo", e);
 		}
 	}
 
-	private WorkflowVersionInfo commit(String message) throws NoHeadException,
-			NoMessageException, UnmergedPathException,
-			ConcurrentRefUpdateException, JGitInternalException,
+	private WorkflowVersionInfo commit(String message) throws NoHeadException, NoMessageException,
+			UnmergedPathException, ConcurrentRefUpdateException, JGitInternalException,
 			WrongRepositoryStateException {
+		
 		RevCommit res = newGit().commit().setMessage(message).call();
 		return new GitVersionInfo(res);
 	}
 
-	private void saveFile(String workflowName, InputStream is)
-			throws WorkflowRepoException {
+	private void saveFile(String workflowName, InputStream is) throws WorkflowRepoException {
 		File f = new File(repoDir, workflowName);
 		FileOutputStream os = null;
 		try {
@@ -264,15 +258,10 @@ public class GitWorkflowRepository implements WorkflowRepository {
 			os = new FileOutputStream(f);
 			IOUtils.copy(is, os);
 		} catch (IOException e) {
-			LOGGER.error("Error saving file ({})" + workflowName
-					+ " in the working directory ({}) : {}", new Object[] {
+			LOGGER.error("Error saving file ({}) in the working directory ({}) : {}", new Object[] {
 					workflowName, repoDir.getAbsolutePath(), e.getMessage() });
-			LOGGER.error(
-					"Exception while saving worflow in the working directory",
-					e);
-			throw new WorkflowRepoException(
-					"Exception while saving worflow in the working directory",
-					e);
+			LOGGER.error("Exception while saving worflow in the working directory", e);
+			throw new WorkflowRepoException("Exception while saving worflow in the working directory", e);
 		} finally {
 			IOUtils.closeQuietly(is);
 			IOUtils.closeQuietly(os);
@@ -280,13 +269,14 @@ public class GitWorkflowRepository implements WorkflowRepository {
 	}
 
 	@Override
-	public List<WorkflowVersionInfo> getVersions(String workflowName)
-			throws WorkflowRepoException {
+	public List<WorkflowVersionInfo> getVersions(String workflowName) throws WorkflowRepoException {
 		try {
-			LogCommand cmd = newGit().log();
-			cmd.addPath(workflowName);
-			Iterable<RevCommit> res = cmd.call();
-
+			Iterable<RevCommit> res;
+			synchronized (repo) {
+				LogCommand cmd = newGit().log();
+				cmd.addPath(workflowName);
+				res = cmd.call();
+			}
 			List<WorkflowVersionInfo> list = new ArrayList<WorkflowVersionInfo>();
 			for (RevCommit rc : res) {
 				list.add(new GitVersionInfo(rc));
@@ -295,27 +285,27 @@ public class GitWorkflowRepository implements WorkflowRepository {
 			return list;
 		} catch (Exception e) {
 			LOGGER.error("Error listing commits for {}", workflowName);
-			throw new WorkflowRepoException("Error listing commits for "
-					+ workflowName, e);
+			throw new WorkflowRepoException("Error listing commits for "+ workflowName, e);
 		}
 	}
 
 	@Override
-	public InputStream getWorkflowFile(String workflowName, String version)
-			throws WorkflowRepoException {
-		checkout(workflowName, version);
-		File f = new File(repoDir, workflowName);
-		try {
-			return new FileInputStream(f);
-		} catch (FileNotFoundException e) {
-			throw new WorkflowRepoException("No such file: " + workflowName,
-					null);
+	public InputStream getWorkflowFile(String workflowName, String version) throws WorkflowRepoException {
+		synchronized (repo) {
+			checkout(workflowName, version);
+			File f = new File(repoDir, workflowName);
+			try {
+				return new FileInputStream(f);
+			} catch (FileNotFoundException e) {
+				throw new WorkflowRepoException("No such file: " + workflowName, null);
+			}
+			finally{
+				checkout(workflowName, "HEAD");
+			}
 		}
-
 	}
 
-	private void checkout(String workflowName, String version)
-			throws WorkflowRepoException {
+	private void checkout(String workflowName, String version) throws WorkflowRepoException {
 		CheckoutCommand cmd = newGit().checkout();
 		cmd.addPath(workflowName);
 		cmd.setStartPoint(version);
@@ -323,10 +313,8 @@ public class GitWorkflowRepository implements WorkflowRepository {
 		try {
 			cmd.call();
 		} catch (Exception e) {
-			LOGGER.error("Error checking out {}, rev {}", workflowName,
-					version == null ? "HEAD" : version);
-			throw new WorkflowRepoException("Error performing checkout"
-					+ workflowName, e);
+			LOGGER.error("Error checking out {}, rev {}", workflowName,	version == null ? "HEAD" : version);
+			throw new WorkflowRepoException("Error performing checkout "+ workflowName, e);
 		}
 	}
 
