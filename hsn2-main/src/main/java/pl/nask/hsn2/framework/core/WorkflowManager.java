@@ -313,4 +313,8 @@ public final class WorkflowManager {
     	}
     	return false;
     }
+    
+    public void jobCancel(long id){
+    	workflowEngine.cancelJob(id);
+    }
 }

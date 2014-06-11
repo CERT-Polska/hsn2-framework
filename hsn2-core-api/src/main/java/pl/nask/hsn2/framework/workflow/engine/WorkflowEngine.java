@@ -155,4 +155,6 @@ public interface WorkflowEngine {
 	 *            Identifier of the job to be resumed.
 	 */
     void resume(long jobId);
+
+	void cancelJob(long jobId);
 }

@@ -199,4 +199,15 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 		}
 		return i;
 	}
+
+	@Override
+	public void cancelJob(long jobId) {
+		try {
+			jobRepository.get(jobId).cancel();
+		} catch (WorkflowJobRepositoryException e) {
+			LOG.error("Cannot find job id.", e);
+		}
+		
+	}
+	
 }

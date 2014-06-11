@@ -57,6 +57,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
     private TaskErrorReasonType failureReason;
     private volatile boolean running = false;
+    private volatile boolean cancelled = false;
     private Map<String, Integer> errorMessages = new ConcurrentHashMap<>();
 
     private Map<String, Properties> userConfig;
@@ -118,7 +119,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     public JobStatus getStatus() {
         if (isFailed()) {
             return JobStatus.FAILED;
-        } else if (isAborted()) {
+        } else if (isCancelled()) {
             return JobStatus.CANCELLED;
         } else if (isEnded()) {
             return JobStatus.COMPLETED;
@@ -127,8 +128,8 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
         }
     }
 
-    private boolean isAborted() {
-        return false;
+    private boolean isCancelled() {
+        return cancelled;
     }
 
     private boolean isFailed() {
@@ -345,6 +346,7 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     public DefaultTasksStatistics getTasksStatistics() {
         return stats;
     }
+    
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
@@ -356,5 +358,15 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     	.append(", active tasks:").append(getActiveSubtasksCount())
     	.append("]");
     	return sb.toString();
+    }
+    
+    @Override
+    public synchronized void cancel(){
+    	if (running){
+    		cancelled = true;
+	    	this.lastActiveStepName = getActiveStepName();
+	    	processInstance.deleteCascade("Cancelled by user.");
+	    	finishJob();
+    	}
     }
 }

@@ -68,4 +68,8 @@ public interface WorkflowJob extends WorkflowJobInfo {
      * Resume the job.
      */
     void resume();
+    /**
+     * Abort the job.
+     */
+	void cancel();
 }
