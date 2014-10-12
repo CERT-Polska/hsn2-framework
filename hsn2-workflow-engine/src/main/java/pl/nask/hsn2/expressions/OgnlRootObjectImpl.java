@@ -20,7 +20,7 @@
 package pl.nask.hsn2.expressions;
 
 import java.util.List;
-
+import java.util.concurrent.ThreadLocalRandom;
 import pl.nask.hsn2.os.OSObject;
 import pl.nask.hsn2.os.ObjectStore;
 import pl.nask.hsn2.os.OgnlRootObject;
@@ -31,7 +31,6 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
 
     private final ObjectStore objectStore;
     private OSObject current;
-
     public OgnlRootObjectImpl(ObjectStore objectStore, long osId) {
         this.objectStore = objectStore;
         this.current = new OSObject(objectStore, osId);
@@ -64,4 +63,12 @@ public class OgnlRootObjectImpl implements OgnlRootObject {
     public OSObject getCurrent() {
         return current;
     }
+
+	@Override
+	public String random(List<String>l) {
+		if ( l.size() > 0) {
+			return l.get(ThreadLocalRandom.current().nextInt(l.size()));
+		}
+		return null;
+	}
 }

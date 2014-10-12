@@ -22,7 +22,7 @@ package pl.nask.hsn2.os;
 import java.util.List;
 
 public interface OgnlRootObject {
-
+	
     public abstract List<OSObject> findByName(String attributeName);
 
     public abstract List<OSObject> findByValue(String attributeName,
@@ -30,4 +30,6 @@ public interface OgnlRootObject {
 
     public abstract List<OSObject> findByValue(String attributeName,
             OSObject value);
+    
+    public String random(List<String> l);
 }
