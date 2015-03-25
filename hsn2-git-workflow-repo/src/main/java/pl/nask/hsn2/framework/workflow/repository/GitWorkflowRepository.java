@@ -299,9 +299,9 @@ public class GitWorkflowRepository implements WorkflowRepository {
 			} catch (FileNotFoundException e) {
 				throw new WorkflowRepoException("No such file: " + workflowName, null);
 			}
-			finally{
-				checkout(workflowName, "HEAD");
-			}
+//			finally{
+//				checkout(workflowName, "HEAD");
+//			}
 		}
 	}
 

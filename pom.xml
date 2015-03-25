@@ -126,6 +126,12 @@
 				<artifactId>commons-ognl</artifactId>
 				<version>${version.commons-ognl}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.19.0-GA</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -142,6 +148,19 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+                <plugins>
+                        <plugin>
+                                <artifactId>maven-source-plugin</artifactId>
+                                <executions>
+                                        <execution>
+                                                <id>attach-sources</id>
+                                                <goals>
+                                                        <goal>jar</goal>
+                                                </goals>
+                                        </execution>
+                                </executions>
+                        </plugin>
+                </plugins>
 	</build>
 
 	<modules>
