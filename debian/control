@@ -1,8 +1,11 @@
-Package: hsn2-framework
-Version: {VER}
+Source: hsn2-framework
 Section: unknown
 Priority: optional
+Maintainer: CERT Polska <info@cert.pl>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+
+Package: hsn2-framework
 Architecture: all
-Maintainer: Juliusz Brzostek (juliusz.brzostek@cert.pl)
+Depends: ${misc:Depends}
 Description: HSN2 Framework Component.
-Distribution: {DEBIAN_DIST}

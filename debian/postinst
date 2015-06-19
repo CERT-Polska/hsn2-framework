@@ -6,3 +6,5 @@ set -e
 if [ ! -f /opt/hsn2/framework/jobId.seq ]; then
 	echo -n "0" > /opt/hsn2/framework/jobId.seq
 fi
+
+#DEBHELPER#
