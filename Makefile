@@ -3,7 +3,7 @@ all:	hsn2-framework-package
 
 clean:	hsn2-framework-package-clean
 
-hsn2-framework-package: hsn2-framework-package-clean
+hsn2-framework-package:
 	mvn clean install -U -Pbundle
 	mkdir -p build/framework
 	mkdir -p build/etc/hsn2/

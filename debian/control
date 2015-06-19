@@ -2,7 +2,7 @@ Source: hsn2-framework
 Section: unknown
 Priority: optional
 Maintainer: CERT Polska <info@cert.pl>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), maven
 Standards-Version: 3.9.3
 
 Package: hsn2-framework
