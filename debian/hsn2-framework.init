@@ -32,8 +32,6 @@ JSVCBIN=`which jsvc`
 # We need openjdk runtime.
 require_java_runtime openjdk
 
-find_jars commons-io slf4j-log4j12 slf4j-api log4j-1.2 commons-daemon
-
 use_jsvc_wrapper () {
 	#log_daemon_msg "using jsvc..."
 	case "$1" in

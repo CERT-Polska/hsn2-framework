@@ -7,5 +7,5 @@ Standards-Version: 3.9.3
 
 Package: hsn2-framework
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, java-wrappers
 Description: HSN2 Framework Component.
