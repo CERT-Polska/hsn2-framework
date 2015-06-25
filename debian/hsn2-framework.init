@@ -18,6 +18,9 @@ HSN2_COMPONENT_HOME="/opt/hsn2/$HSN2_COMPONENT"
 PIDFILE="/var/run/hsn2-$HSN2_COMPONENT.pid"
 
 HSN2_COMPONENT_PARAMS="-configPath /etc/hsn2/$HSN2_COMPONENT.conf"
+
+HSN2_CLASSPATH=$HSN2_COMPONENT_HOME/lib:$HSN2_COMPONENT_HOME/hsn2-$HSN2_COMPONENT.jar
+
 HSN2_JVM_PARAMS="-Xmx1500m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=1100"
 
 MAINCLASS="pl.nask.hsn2.framework.core.Main"
@@ -37,14 +40,14 @@ use_jsvc_wrapper () {
 	case "$1" in
 		start)
 			log_daemon_msg "Starting" "$NAME"
-			$JSVCBIN -home $JAVA_HOME -wait 30 -pidfile ${PIDFILE} $HSN2_JVM_PARAMS -cp $JAVA_CLASSPATH:$HSN2_COMPONENT_HOME/hsn2-$HSN2_COMPONENT.jar $MAINCLASS $HSN2_COMPONENT_PARAMS
+			$JSVCBIN -home $JAVA_HOME -wait 30 -pidfile ${PIDFILE} $HSN2_JVM_PARAMS -cp $JAVA_CLASSPATH:$HSN2_CLASSPATH $MAINCLASS $HSN2_COMPONENT_PARAMS
 			
 			log_end_msg $?
 			return $?
 			;;
 		stop)
 			log_daemon_msg "Stopping" "$NAME"
-			$JSVCBIN -home $JAVA_HOME -stop -pidfile ${PIDFILE} $HSN2_JVM_PARAMS -cp $JAVA_CLASSPATH:$HSN2_COMPONENT_HOME/hsn2-$HSN2_COMPONENT.jar $MAINCLASS 
+			$JSVCBIN -home $JAVA_HOME -stop -pidfile ${PIDFILE} $HSN2_JVM_PARAMS -cp $JAVA_CLASSPATH:$HSN2_CLASSPATH $MAINCLASS 
 
 			log_end_msg $?
 			return $?

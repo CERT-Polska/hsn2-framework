@@ -7,4 +7,8 @@ if [ ! -f /opt/hsn2/framework/jobId.seq ]; then
 	echo -n "0" > /opt/hsn2/framework/jobId.seq
 fi
 
+if [ ! -d /etc/hsn2/workflows/.git ]; then
+	git init /etc/hsn2/workflows/
+fi
+
 #DEBHELPER#
