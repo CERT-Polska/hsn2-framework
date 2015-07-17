@@ -31,5 +31,3 @@ prepare_start() {
 choose_java_service_action $@
 
 exit $?
-
-
