@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+. /lib/hsn2/conf-functions
+
 # create initial jobs sequence file in default location
 #
 if [ ! -f /opt/hsn2/framework/jobId.seq ]; then
@@ -9,6 +11,11 @@ fi
 
 if [ ! -d /etc/hsn2/workflows/.git ]; then
 	git init /etc/hsn2/workflows/
+fi
+
+if [ "$1" = "configure" ]; then
+	setConfigValueFromDb AMQP.server.address hsn2-framework/broker /etc/hsn2/framework.conf
+	db_stop
 fi
 
 #DEBHELPER#

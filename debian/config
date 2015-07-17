@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+	
+db_input high hsn2-framework/broker || true
+db_go
+
