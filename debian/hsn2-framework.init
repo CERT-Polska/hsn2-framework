@@ -15,7 +15,7 @@ HSN2_COMPONENT="framework"
 MAINCLASS="pl.nask.hsn2.framework.core.Main"
 CONFFILE=/etc/hsn2/framework.conf
 
-HSN2_JMX_PORT=1100
+#HSN2_JMX_PORT=1100
 HSN2_JVM_PARAMS_MEMORY=-Xmx1500m
 
 . /lib/hsn2/init-functions-java
