@@ -21,11 +21,12 @@ HSN2_JVM_PARAMS_MEMORY=-Xmx1500m
 . /lib/hsn2/init-functions-java
 
 load_config() {
-	return
+	. /etc/hsn2/common.conf
+	#LOG_LEVEL=DEBUG
 }
 
 prepare_start() {
-	HSN2_COMPONENT_PARAMS="-configPath /etc/hsn2/$HSN2_COMPONENT.conf"
+	HSN2_COMPONENT_PARAMS="-configPath /etc/hsn2/$HSN2_COMPONENT.conf -logLevel $LOG_LEVEL"
 }
 	
 choose_java_service_action $@
