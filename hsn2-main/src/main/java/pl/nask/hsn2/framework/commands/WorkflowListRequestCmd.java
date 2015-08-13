@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,9 @@ package pl.nask.hsn2.framework.commands;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.nask.hsn2.bus.dispatcher.Command;
 import pl.nask.hsn2.bus.dispatcher.CommandContext;
 import pl.nask.hsn2.bus.dispatcher.CommandExecutionException;
@@ -34,6 +37,7 @@ import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
 public class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowListRequestCmd.class);
 
 	@Override
 	public Operation execute(CommandContext<WorkflowListRequest> context)
@@ -42,16 +46,17 @@ public class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
 		try {
 			List<WorkflowDescriptor> defs = WorkflowManager.getInstance()
 					.getWorkflowDefinitions(
-							context.getSourceOperation().isEnabledOnly());		
-	
+							context.getSourceOperation().isEnabledOnly());
+
 			WorkflowListReplyBuilder builder = new WorkflowListReplyBuilder();
 			for (WorkflowDescriptor descriptor : defs) {
-				
+
 				// checks is workflow is enabled by policy and if it's deployed
 				boolean enabled = WorkflowPolicyManager.isEnabledByPolicy(descriptor.getName());
-				
+
 				builder.addWorkflowBasicInfo(
 						new WorkflowBasicInfo(descriptor.getName(), enabled));
+				LOGGER.debug("Added workflow: {}, {}", descriptor.getName(), enabled);
 			}
 			return builder.build();
 		} catch (Exception e) {

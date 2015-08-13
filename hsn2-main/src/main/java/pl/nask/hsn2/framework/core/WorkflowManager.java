@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
+ *
  * This file is part of HoneySpider Network 2.0.
- * 
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -69,7 +69,7 @@ public final class WorkflowManager {
     private WorkflowRepository repository;
 
     private WorkflowValidator validator;
-    
+
     private int maximumRunningJobLimit = 0; // unlimited by default
 
     private WorkflowManager() {
@@ -80,7 +80,7 @@ public final class WorkflowManager {
     	if (INSTANCE.workflowEngine == null) {
     		throw new IllegalStateException("WorkflowManager not configured properly: workflowEngine is missing");
     	}
-    	
+
         if (INSTANCE.workflowDefinitionManager == null) {
             throw new IllegalStateException("WorkflowManager not configured properly: workflowDefinitionManager is missing");
         }
@@ -143,13 +143,13 @@ public final class WorkflowManager {
 
 		if (workflowVersion == null || "".equals(workflowVersion)) {
 
-			// Is there is any version of the workflow? 
+			// Is there is any version of the workflow?
 			if (versions == null || versions.isEmpty()) {
                 throw new WorkflowRepoException("Workflow cannot be found: " + workflowName);
             }
 
 			// take HEAD
-    		return (WorkflowVersionInfo) versions.get(0);
+    		return versions.get(0);
     	} else {
     		for (WorkflowVersionInfo v : versions) {
     			if (workflowVersion.equals(v.getVersion())) {
@@ -163,7 +163,7 @@ public final class WorkflowManager {
     				.append(workflowName).append("'.").toString());
     	}
     }
-    
+
     private WorkflowDescriptor deployWorkflow(String workflowName, String version) throws WorkflowNotDeployedException {
         InputStream is = null;
         try {
@@ -201,9 +201,13 @@ public final class WorkflowManager {
 
     public List<WorkflowDescriptor> getWorkflowDefinitions(boolean enabledOnly) throws WorkflowRepoException {
         List<WorkflowDescriptor> res = new ArrayList<WorkflowDescriptor>(workflowDefinitionManager.getWorkflowDefinitions(enabledOnly));
+        LOGGER.debug("[getWorkflowDefinitions] Got {} workflows from WorkflowDescriptorManager", res.size());
         Set<String> names = new HashSet<String>();
         for (WorkflowDescriptor d: res) {
-            names.add(d.getName());
+            boolean added = names.add(d.getName());
+            if (!added) {
+            	LOGGER.debug("[getWorkflowDefinitions] Got duplicated workflow: {}", d.getName());
+            }
         }
         if (!enabledOnly) {
 	        List<String> workflowsInRepo = repository.listWorkflowNames();
@@ -211,6 +215,7 @@ public final class WorkflowManager {
 	            if (!names.contains(name)) { //non-nulls are already on the list
                 	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> desc = new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>(null, name, null);
                     res.add(desc);
+                    LOGGER.debug("[getWorkflowDefinitions] Added workflow from repository: {}", desc.getName());
                 }
             }
         }
@@ -221,14 +226,14 @@ public final class WorkflowManager {
 	public WorkflowDescriptor getWorkflowDefinition(
 			String workflowName, String workflowVersion)
 			throws WorkflowRepoException {
-		
+
     	String version = getCurrentVersionIfEmpty(workflowName, workflowVersion);
     	WorkflowDescriptor w = workflowDefinitionManager.get(version);
 
     	if (w != null) {
     		return w;
     	}
-    	
+
     	InputStream is = null;
     	Workflow workflow = null;
     	try {
@@ -243,7 +248,7 @@ public final class WorkflowManager {
     	}
         return new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>(version, workflowName, workflow);
     }
-    
+
     public void taskAccepted(long jobId, int requestId) {
         workflowEngine.taskAccepted(jobId, requestId);
     }
@@ -297,15 +302,15 @@ public final class WorkflowManager {
         WorkflowVersionInfo info = repository.saveWorkflow(name, inputStream);
         return info.getVersion();
     }
- 
+
     public List<WorkflowVersionInfo> getWorkflowHistory(String workflowName) throws WorkflowRepoException {
     	return repository.getVersions(workflowName);
     }
-   
+
     public InputStream downloadWorkflow(String workflowName, String version) throws WorkflowRepoException{
     	return repository.getWorkflowFile(workflowName, getCurrentVersionIfEmpty(workflowName, version));
     }
-    
+
     public boolean isMaximumProcessingJobsLimitExeeded() {
     	if (this.maximumRunningJobLimit > 0
     			&& workflowEngine.getJobsCount(JobStatus.PROCESSING)>=this.maximumRunningJobLimit) {
@@ -313,7 +318,7 @@ public final class WorkflowManager {
     	}
     	return false;
     }
-    
+
     public void jobCancel(long id){
     	workflowEngine.cancelJob(id);
     }
