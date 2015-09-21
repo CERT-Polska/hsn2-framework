@@ -13,8 +13,8 @@ import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 
-public class JobSuppressorHelperImpl implements JobSuppressorHelper {
-	private final static Logger LOGGER = LoggerFactory.getLogger(JobSuppressorHelperImpl.class);
+public final class JobSuppressorHelperImpl implements JobSuppressorHelper {
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSuppressorHelperImpl.class);
 	private BlockingDeque<TaskRequestDataContainer> waitingRequests = new LinkedBlockingDeque<>();
 	private final Semaphore semaphore;
 	private final long jobId;

@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * 
  */
-public class DefaultTasksStatistics implements TasksStatistics {
+public final class DefaultTasksStatistics implements TasksStatistics {
 
 	/**
 	 * Internal map of running tasks.

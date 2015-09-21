@@ -21,7 +21,7 @@ package pl.nask.hsn2.framework.workflow.hwl;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-public class Output {
+public final class Output {
 
     @XmlAttribute(required=true, name="process")
     private String processName;
@@ -41,11 +41,11 @@ public class Output {
         this.expression = expression;
     }
 
-    public final String getProcessName() {
+    public String getProcessName() {
         return processName;
     }
 
-    public final String getExpression() {
+    public String getExpression() {
         return expression;
     }
     

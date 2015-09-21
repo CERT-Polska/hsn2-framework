@@ -6,9 +6,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingleThreadTasksSuppressor extends Thread {
-	private final static Logger LOGGER = LoggerFactory.getLogger(SingleThreadTasksSuppressor.class);
+public final class SingleThreadTasksSuppressor extends Thread {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SingleThreadTasksSuppressor.class);
+	
 	private BlockingDeque<JobSuppressorHelper> jobSuppressors = new LinkedBlockingDeque<>();
+
 	private final boolean isEnabled;
 	// private final int bufferSize;
 

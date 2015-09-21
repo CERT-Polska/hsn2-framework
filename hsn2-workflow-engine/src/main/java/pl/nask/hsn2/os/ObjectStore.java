@@ -26,13 +26,13 @@ import java.util.Map;
 
 public interface ObjectStore {
 
-    public abstract Map<String, Object> get(long id);
+    Map<String, Object> get(long id);
 
-    public abstract List<OSObject> findByName(String attributeName);
+    List<OSObject> findByName(String attributeName);
 
-    public abstract List<OSObject> findByValue(String attributeName,
+    List<OSObject> findByValue(String attributeName,
             Object value);
 
-    public abstract void addAttribute(long id, String key, Object value);
+    void addAttribute(long id, String key, Object value);
 
 }

@@ -25,9 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 /*	
- * Comparable is implemented due to a bug in OGNL which forces a non-numeric object to implement comparable for ==/
+ * Comparable is implemented due to a bug in OGNL
+ * which forces a non-numeric object to implement comparable for ==/
  */
-public class OSObject implements Map<String, Object>, Comparable<OSObject>, OgnlRootObject {
+public final class OSObject implements Map<String, Object>, Comparable<OSObject>, OgnlRootObject {
     private Map<String, Object> object;
     protected final ObjectStore objectStore;
     private final long id;

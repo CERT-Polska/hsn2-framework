@@ -56,9 +56,9 @@ import pl.nask.hsn2.workflow.parser.WorkflowValidationException;
 import pl.nask.hsn2.workflow.parser.WorkflowValidator;
 
 public final class WorkflowManager {
-    private final static Logger LOGGER = LoggerFactory.getLogger(WorkflowManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowManager.class);
 
-    private final static WorkflowManager INSTANCE = new WorkflowManager();
+    private static final WorkflowManager INSTANCE = new WorkflowManager();
 
     private WorkflowParser parser = new HWLParser();
 
@@ -113,8 +113,11 @@ public final class WorkflowManager {
      * @throws WorkflowNotDeployedException
      * @throws WorkflowRepoException
      */
-    public long runJob(String workflowName, Map<String, Properties> workflowConfig, String workflowVersion) throws WorkflowNotDeployedException, WorkflowEngineException, WorkflowRepoException  {
-        String version = getCurrentVersionIfEmpty(workflowName, workflowVersion);
+	public long runJob(String workflowName,
+			Map<String, Properties> workflowConfig, String workflowVersion)
+			throws WorkflowEngineException, WorkflowRepoException {
+
+		String version = getCurrentVersionIfEmpty(workflowName, workflowVersion);
         WorkflowDescriptor w = workflowDefinitionManager.get(version);
 
         if (w == null) {

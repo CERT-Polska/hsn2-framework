@@ -12,7 +12,7 @@ public interface JobSuppressorHelper {
 	 * Sends task request to proper service if any of them is waiting to be sent, but only if there are free task buffer
 	 * space. This is non blocking method.
 	 */
-	public void tryToSendRequest();
+	void tryToSendRequest();
 
 	/**
 	 * Adds task request to waiting list. Also notifies suppressor that job status changed.
@@ -24,7 +24,7 @@ public interface JobSuppressorHelper {
 	 * @param serviceParameters
 	 * @param stats
 	 */
-	public void addTaskRequest(String serviceName, String serviceLabel, int taskId, long objectDataId, Properties serviceParameters,
+	void addTaskRequest(String serviceName, String serviceLabel, int taskId, long objectDataId, Properties serviceParameters,
 			DefaultTasksStatistics stats);
 
 	/**
@@ -38,19 +38,19 @@ public interface JobSuppressorHelper {
 	 * @param stats
 	 *            Job statistics.
 	 */
-	public void signalTaskCompletion(Long jobId, Integer taskId, DefaultTasksStatistics stats);
+	void signalTaskCompletion(Long jobId, Integer taskId, DefaultTasksStatistics stats);
 
 	/**
 	 * Provides actual tasks requests number waiting to be processed.
 	 * 
 	 * @return Tasks requests number.
 	 */
-	public int getWaitingTasksRequestsCount();
+	int getWaitingTasksRequestsCount();
 
 	/**
 	 * Provides actual free task buffer spaces.
 	 * 
 	 * @return Free task buffer spaces.
 	 */
-	public int getFreeBuforSpacesCount();
+	int getFreeBuforSpacesCount();
 }

@@ -72,4 +72,26 @@ public class MapWorkflowJobRepository implements WorkflowJobRepository {
 		return new ArrayList<WorkflowJobInfo>(jobs.values());
 	}
 
+	@Override
+	public void remove(long id) throws WorkflowJobRepositoryException {
+		WorkflowJob job = jobs.get(id);
+		if (job == null) {
+			return;
+		}
+		if (!job.isEnded()) {
+			throw new WorkflowJobRepositoryException("Running job cannot be removed from repository.");
+		}
+		jobs.remove(id);
+	}
+
+	@Override
+	public void purgeEndedBefore(long timestamp)
+			throws WorkflowJobRepositoryException {
+		for (Map.Entry<Long, WorkflowJob> entry : jobs.entrySet()) {
+			if (entry.getValue().isEnded() && entry.getValue().getEndTime() < timestamp) {
+				jobs.remove(entry.getKey());
+			}
+		}
+	}
+
 }

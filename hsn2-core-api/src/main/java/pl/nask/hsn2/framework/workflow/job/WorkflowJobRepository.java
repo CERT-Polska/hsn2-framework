@@ -49,8 +49,8 @@ public interface WorkflowJobRepository {
 	 * @return Identifier of the job in the repository.
 	 * 
 	 * @throws WorkflowJobRepositoryException
-	 *             Any problem with addinh the job to the repository will rise
-	 *             the execption.
+	 *             Any problem with adding the job to the repository will rise
+	 *             the exception.
 	 */
 	long add(WorkflowJob job) throws WorkflowJobRepositoryException;
 	
@@ -65,4 +65,29 @@ public interface WorkflowJobRepository {
 	 */
 	List<WorkflowJobInfo> getJobs() throws WorkflowJobRepositoryException;
 
+	/**
+	 * Removes the job identified by <code>id</code>.
+	 * Only ended jobs can be removed.
+	 * If the job not exist nothing happen.
+	 * 
+	 * @param id Identifier of the job to be removed from repository.
+	 * 
+	 * @throws WorkflowJobRepositoryException
+	 * 			Any problem with removing the job from the repository will rise
+	 * 			the exception. E.g. The job is not ended yet.
+	 */
+	void remove(long id) throws WorkflowJobRepositoryException;
+
+	/**
+	 * Removes from the repository all the jobs which are ended
+	 * and time of finish is older then <code>timestamp</code>.
+	 * 
+	 * @param timestamp
+	 * 			Point in time, jobs ended before this point will be purged.
+	 * 
+	 * @throws WorkflowJobRepositoryException
+	 *             Any problem with receiving list of jobs will rise this
+	 *             exception.
+	 */
+	void purgeEndedBefore(long timestamp) throws WorkflowJobRepositoryException;
 }
