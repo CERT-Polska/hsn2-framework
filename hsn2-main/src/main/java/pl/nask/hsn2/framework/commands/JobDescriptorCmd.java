@@ -33,9 +33,9 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowNotDeployedException;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
-public class JobDescriptorCmd implements Command<JobDescriptor> {
+public final class JobDescriptorCmd implements Command<JobDescriptor> {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(JobDescriptorCmd.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobDescriptorCmd.class);
 	
 	private static final String ERROR_JOBS_LIMIT = "Maximum running jobs limit exceeded.";
 	private static final String ERROR_WORKFLOW_NOT_DEPLOYED = "Workflow not deployed: ";

@@ -34,7 +34,7 @@ import pl.nask.hsn2.framework.workflow.engine.WorkflowNotDeployedException;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowNotRegisteredException;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
-public class ActivitiWorkflowDefinitionManager extends MapBasedWorkflowDescriptorManager<ProcessBasedWorkflowDescriptor<PvmProcessDefinition>> {
+public final class ActivitiWorkflowDefinitionManager extends MapBasedWorkflowDescriptorManager<ProcessBasedWorkflowDescriptor<PvmProcessDefinition>> {
 	
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivitiWorkflowDefinitionManager.class);
 

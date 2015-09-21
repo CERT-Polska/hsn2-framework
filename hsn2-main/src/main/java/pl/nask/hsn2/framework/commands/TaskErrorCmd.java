@@ -26,7 +26,7 @@ import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.bus.operations.TaskError;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class TaskErrorCmd implements Command<TaskError> {
+public final class TaskErrorCmd implements Command<TaskError> {
 
 	@Override
 	public Operation execute(CommandContext<TaskError> context)

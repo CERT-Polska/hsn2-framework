@@ -21,13 +21,13 @@ package pl.nask.hsn2.expressions;
 
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnector;
 
-public class OgnlExpressionResolver implements ExpressionResolver {
+public final class OgnlExpressionResolver implements ExpressionResolver {
 
     private final ObjectStoreConnector connector;
 
     public OgnlExpressionResolver(ObjectStoreConnector connector) {
     	if (connector == null) {
-    		throw new NullPointerException("ObjectStoreConnector");
+    		throw new IllegalArgumentException("ObjectStoreConnector cannot be null!");
     	}
         this.connector = connector;
     }

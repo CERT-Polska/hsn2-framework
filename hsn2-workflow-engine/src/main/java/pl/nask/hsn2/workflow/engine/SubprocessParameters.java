@@ -19,11 +19,15 @@
 
 package pl.nask.hsn2.workflow.engine;
 
+import java.io.Serializable;
+
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 
-public class SubprocessParameters {
+public final class SubprocessParameters implements Serializable {
 
-    private final WorkflowDescriptor wdf;
+	private static final long serialVersionUID = -8950099099103372295L;
+
+	private final WorkflowDescriptor wdf;
     private final long objectDataId;
 
     public SubprocessParameters(WorkflowDescriptor wdf, long objectDataId) {

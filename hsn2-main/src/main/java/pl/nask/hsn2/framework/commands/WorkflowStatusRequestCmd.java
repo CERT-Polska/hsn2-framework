@@ -33,7 +33,7 @@ import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowVersionInfo;
 
-public class WorkflowStatusRequestCmd implements Command<WorkflowStatusRequest> {
+public final class WorkflowStatusRequestCmd implements Command<WorkflowStatusRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowStatusRequest> context)

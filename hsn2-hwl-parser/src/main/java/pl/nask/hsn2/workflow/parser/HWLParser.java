@@ -58,8 +58,9 @@ import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Wait;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
-public class HWLParser implements WorkflowParser {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HWLParser.class);
+public final class HWLParser implements WorkflowParser {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HWLParser.class);
 
     private JAXBContext ctx;
     private Schema schema;

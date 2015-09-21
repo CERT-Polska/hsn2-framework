@@ -30,7 +30,7 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
 
-public class WorkflowPolicyRequestCmd implements Command<WorkflowPolicyRequest> {
+public final class WorkflowPolicyRequestCmd implements Command<WorkflowPolicyRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowPolicyRequest> context)

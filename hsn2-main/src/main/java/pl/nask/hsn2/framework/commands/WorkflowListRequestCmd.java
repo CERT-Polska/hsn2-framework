@@ -36,7 +36,7 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
-public class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
+public final class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowListRequestCmd.class);
 
 	@Override

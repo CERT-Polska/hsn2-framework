@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class NotEmptyValidator implements Validator {
+public final class NotEmptyValidator implements Validator {
 
     @Override
     public void validate(String key, String value) throws ValidationException {

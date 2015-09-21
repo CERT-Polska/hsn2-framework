@@ -32,6 +32,11 @@ public class FatalTaskErrorException extends RuntimeException {
 	public FatalTaskErrorException(String message) {
 		super(message);
 	}
+
+	public FatalTaskErrorException(String message, Throwable thw) {
+		super(message, thw);
+	}
+
 	public FatalTaskErrorException(Throwable thw) {
 		super(thw);
 	}

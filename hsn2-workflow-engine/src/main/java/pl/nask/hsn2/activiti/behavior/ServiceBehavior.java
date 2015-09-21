@@ -43,9 +43,11 @@ import pl.nask.hsn2.suppressor.JobSuppressorUtils;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 import pl.nask.hsn2.workflow.engine.SubprocessParameters;
 
-public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServiceBehavior.class);
-    private final String serviceName;
+public final class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceBehavior.class);
+
+	private final String serviceName;
     private final String serviceLabel;
     private final Properties serviceParameters;
     private final List<Output> outputs;
@@ -60,10 +62,11 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         this.outputs = outputs;
         this.expressionResolver = resolver;
         this.definitionRegistry = definitionRegistry;
-        if(ignoreErrors !=null)
+        if(ignoreErrors !=null) {
         	this.errorsIgnored = ignoreErrors;
-        else
+        } else {
         	this.errorsIgnored = new ArrayList<TaskErrorReasonType>();
+        }
     }
 
     @Override
@@ -89,7 +92,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
 				JobSuppressorUtils.sendTaskRequest(jobId, stats, serviceName, serviceLabel, taskId, objectDataId, params);
 			} catch (ProcessConnectorException e) {
 				LOGGER.error(e.getMessage(), e);
-				System.exit(1); // TODO: doggy! fix it ASAP! Maybe internal TaskError operation?
+				throw new FatalTaskErrorException("Non-ignored task error: ", e);
 			}
 		} else {
 			// Suppressor is enabled.

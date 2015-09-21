@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class ValidationException extends Exception {
+public final class ValidationException extends Exception {
 
     private static final long serialVersionUID = 8856607005580647402L;
 

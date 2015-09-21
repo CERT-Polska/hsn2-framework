@@ -29,7 +29,7 @@ import pl.nask.hsn2.bus.operations.GetConfigRequest;
 import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.framework.core.FrameworkContext;
 
-public class GetConfigRequestCmd implements Command<GetConfigRequest> {
+public final class GetConfigRequestCmd implements Command<GetConfigRequest> {
 
 	@Override
 	public Operation execute(CommandContext<GetConfigRequest> context)

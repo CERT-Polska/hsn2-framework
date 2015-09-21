@@ -26,7 +26,7 @@ import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.bus.operations.TaskAccepted;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class TaskAcceptedCmd implements Command<TaskAccepted> {
+public final class TaskAcceptedCmd implements Command<TaskAccepted> {
 
 	@Override
 	public Operation execute(CommandContext<TaskAccepted> context)

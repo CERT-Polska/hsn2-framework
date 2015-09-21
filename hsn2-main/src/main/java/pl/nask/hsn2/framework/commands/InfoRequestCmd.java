@@ -35,7 +35,7 @@ import pl.nask.hsn2.bus.operations.builder.ObjectDataBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class InfoRequestCmd implements Command<InfoRequest> {
+public final class InfoRequestCmd implements Command<InfoRequest> {
 
 	@Override
 	public Operation execute(CommandContext<InfoRequest> context)

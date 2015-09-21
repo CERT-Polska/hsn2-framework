@@ -29,6 +29,8 @@ import pl.nask.hsn2.framework.workflow.hwl.Workflow;
  */
 public class DefaultWorkflowDescriptor implements WorkflowDescriptor {
 
+	private static final long serialVersionUID = 2878387637708561687L;
+
 	/**
 	 * Identifier of a worklow.
 	 */

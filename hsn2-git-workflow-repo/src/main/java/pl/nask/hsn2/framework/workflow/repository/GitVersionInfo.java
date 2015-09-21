@@ -21,8 +21,9 @@ package pl.nask.hsn2.framework.workflow.repository;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 
-public class GitVersionInfo implements WorkflowVersionInfo {
-    private final int time;
+public final class GitVersionInfo implements WorkflowVersionInfo {
+
+	private final int time;
     private final String version;
 
     public GitVersionInfo(RevCommit commit) {

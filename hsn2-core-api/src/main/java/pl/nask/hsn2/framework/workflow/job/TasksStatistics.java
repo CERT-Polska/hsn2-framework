@@ -19,6 +19,7 @@
 
 package pl.nask.hsn2.framework.workflow.job;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ import java.util.Map;
  * 
  *
  */
-public interface TasksStatistics {
+public interface TasksStatistics extends Serializable {
 
 	/**
 	 * Gets a map of started tasks. Each key in the map

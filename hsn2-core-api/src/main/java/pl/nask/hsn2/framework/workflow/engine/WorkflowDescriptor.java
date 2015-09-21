@@ -19,6 +19,8 @@
 
 package pl.nask.hsn2.framework.workflow.engine;
 
+import java.io.Serializable;
+
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
 /**
@@ -42,7 +44,7 @@ import pl.nask.hsn2.framework.workflow.hwl.Workflow;
  * 
  *
  */
-public interface WorkflowDescriptor {
+public interface WorkflowDescriptor extends Serializable {
 
 	/**
 	 * Gets identifier of the descriptor.

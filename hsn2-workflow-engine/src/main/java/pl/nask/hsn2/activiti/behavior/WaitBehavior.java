@@ -40,7 +40,7 @@ public final class WaitBehavior extends AbstractBpmnActivityBehavior implements 
     }
 
     @Override
-    public void execute(ActivityExecution execution) throws Exception {
+    public void execute(ActivityExecution execution) {
         // if there are no pending subprocesses, leave!
         tryToLeave(execution);
     }

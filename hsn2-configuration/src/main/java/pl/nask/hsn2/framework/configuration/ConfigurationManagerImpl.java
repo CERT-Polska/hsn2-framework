@@ -106,13 +106,13 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
     }
 
     @Override
-    public void reloadConfig() throws ConfigurationException, ValidationException, MappingException {
+    public final void reloadConfig() throws ConfigurationException, ValidationException, MappingException {
     	LOGGER.info("No configuration file name provided. Trying default user configuration file first.");
         reloadConfig(DEFAULT_CONFIG_FILENAME);
     }
 
     @Override
-    public void reloadConfig(String filePath) throws ConfigurationException, ValidationException, MappingException {
+    public final void reloadConfig(String filePath) throws ConfigurationException, ValidationException, MappingException {
     	File file = new File(filePath);
         initValidators();
         LOGGER.info("Reloading configuration from: " + file.getAbsolutePath());
@@ -135,16 +135,20 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
     }
 
     @Override
-    public void setConfigValue(String key, String value) throws ValidationException, MappingException {
+    public final void setConfigValue(String key, String value) throws ValidationException, MappingException {
         setConfigValue(configuration, key, value);
     }
 
     @Override
-    public Configuration getCurrentConfig() {
+    public final Configuration getCurrentConfig() {
         return configuration;
     }
 
-    protected void setConfigValue(Configuration configuration, String key, String value) throws ValidationException, MappingException {
+    protected final void setCurrentConfig(Configuration configuration) {
+    	this.configuration = configuration;
+    }
+    
+    protected final void setConfigValue(Configuration configuration, String key, String value) throws ValidationException, MappingException {
         validate(key, value);
         internalUserConfig.setProperty(key, value);
     }

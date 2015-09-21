@@ -32,7 +32,7 @@ import pl.nask.hsn2.bus.operations.builder.JobListReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class JobListRequestCmd implements Command<JobListRequest> {
+public final class JobListRequestCmd implements Command<JobListRequest> {
 
 	@Override
 	public Operation execute(CommandContext<JobListRequest> context)

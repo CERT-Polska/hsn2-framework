@@ -30,7 +30,7 @@ import pl.nask.hsn2.bus.operations.builder.WorkflowErrorBuilder;
 import pl.nask.hsn2.bus.operations.builder.WorkflowGetReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class WorkflowGetRequestCmd implements Command<WorkflowGetRequest> {
+public final class WorkflowGetRequestCmd implements Command<WorkflowGetRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowGetRequest> context)

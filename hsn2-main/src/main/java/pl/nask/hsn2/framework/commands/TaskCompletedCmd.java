@@ -26,7 +26,7 @@ import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.bus.operations.TaskCompleted;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class TaskCompletedCmd implements Command<TaskCompleted> {
+public final class TaskCompletedCmd implements Command<TaskCompleted> {
 
 	@Override
 	public Operation execute(CommandContext<TaskCompleted> context)

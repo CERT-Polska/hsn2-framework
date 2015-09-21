@@ -41,10 +41,10 @@ public final class ProcessContext implements Serializable {
 	private final long jobId;
 	private final SubprocessParameters subprocessParameters;
 	private final Map<String, Properties> userConfig;
-	private final IntIdGen taskIdGenerator;
+	private final transient IntIdGen taskIdGenerator;
 	private final TasksStatistics stats;
 	private final List<ExecutionWrapper> waitingForResume;
-	private JobSuppressorHelper jobSuppressorHelper;
+	private transient JobSuppressorHelper jobSuppressorHelper;
 	
 	private Integer currentTaskId;
 	private int taskAccepted;

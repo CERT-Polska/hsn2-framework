@@ -38,10 +38,15 @@ public final class JobReminderData implements Comparable<Long> {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof JobReminderData) {
-			JobReminderData jrdObj = (JobReminderData) obj;
-			return (jrdObj.jobId == jobId) && (jrdObj.time == time);
+		if (obj == null || (obj.getClass() != this.getClass())) {
+			return false;
 		}
-		return false;
+		JobReminderData jrdObj = (JobReminderData) obj;
+		return (jrdObj.jobId == jobId) && (jrdObj.time == time);
+	}
+	
+	@Override
+	public int hashCode() {
+		return (int) ((31 * jobId + time)^time)>>>32;
 	}
 }

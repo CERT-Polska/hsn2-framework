@@ -27,8 +27,9 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.expressions.ExpressionResolver;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
-public class ScriptBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
-    private static final Logger LOG = LoggerFactory.getLogger(ScriptBehavior.class);
+public final class ScriptBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ScriptBehavior.class);
 
     private final String scriptBody;
     private final ExpressionResolver expressionResolver;
@@ -48,9 +49,9 @@ public class ScriptBehavior extends AbstractBpmnActivityBehavior implements HSNB
         ExecutionWrapper wrapper = new ExecutionWrapper(execution);
         long jobId = wrapper.getJobId();
         long objectId = wrapper.getSubprocessParameters().getObjectDataId();
-        LOG.debug("Executing script (jobId={}, objectId={})", jobId, objectId);
+        LOGGER.debug("Executing script (jobId={}, objectId={})", jobId, objectId);
         Object result = expressionResolver.evaluateExpression(jobId, objectId, scriptBody);
-        LOG.debug("Script executed (jobId={}, objectId={}) with result = {}", new Object[]{jobId, objectId, result});
+        LOGGER.debug("Script executed (jobId={}, objectId={}) with result = {}", new Object[]{jobId, objectId, result});
 
         leave(execution);
     }

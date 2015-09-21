@@ -25,9 +25,9 @@ import org.apache.commons.ognl.DefaultMemberAccess;
 import org.apache.commons.ognl.Ognl;
 import org.apache.commons.ognl.OgnlException;
 
-public class OgnlConfigurationMapper implements ConfigurationMapper {
+public final class OgnlConfigurationMapper implements ConfigurationMapper {
 
-    private final static DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess(true);
+    private static final DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess(true);
 
     private Map<String, String> mapping;
 

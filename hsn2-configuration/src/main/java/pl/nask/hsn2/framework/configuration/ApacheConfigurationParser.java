@@ -28,11 +28,11 @@ import java.io.InputStream;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
 
-public class ApacheConfigurationParser implements ConfigurationReader<PropertiesConfiguration> {
+public final class ApacheConfigurationParser implements ConfigurationReader<PropertiesConfiguration> {
 
     @Override
-    public PropertiesConfiguration parse(String filePath) throws FileNotFoundException,
-            IOException, ConfigurationException {
+	public PropertiesConfiguration parse(String filePath) throws IOException,
+			ConfigurationException {
         File conf = new File(filePath);
         InputStream is = null;
         try{
@@ -51,7 +51,8 @@ public class ApacheConfigurationParser implements ConfigurationReader<Properties
     }
 
     @Override
-    public PropertiesConfiguration parse(InputStream conf) throws FileNotFoundException, IOException, ConfigurationException {
+	public PropertiesConfiguration parse(InputStream conf) throws IOException,
+			ConfigurationException {
         PropertiesConfiguration pconf = new PropertiesConfiguration();
         try {
             pconf.load(conf);

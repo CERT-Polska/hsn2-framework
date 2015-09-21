@@ -26,8 +26,7 @@ import pl.nask.hsn2.os.ObjectStore;
 import pl.nask.hsn2.os.OgnlRootObject;
 
 
-
-public class OgnlRootObjectImpl implements OgnlRootObject {
+public final class OgnlRootObjectImpl implements OgnlRootObject {
 
     private final ObjectStore objectStore;
     private OSObject current;

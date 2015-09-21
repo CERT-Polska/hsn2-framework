@@ -23,11 +23,9 @@ import java.util.List;
 
 public interface OgnlRootObject {
 
-    public abstract List<OSObject> findByName(String attributeName);
+	List<OSObject> findByName(String attributeName);
 
-    public abstract List<OSObject> findByValue(String attributeName,
-            String value);
+	List<OSObject> findByValue(String attributeName, String value);
 
-    public abstract List<OSObject> findByValue(String attributeName,
-            OSObject value);
+	List<OSObject> findByValue(String attributeName, OSObject value);
 }

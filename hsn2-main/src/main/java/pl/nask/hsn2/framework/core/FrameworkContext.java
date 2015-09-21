@@ -25,10 +25,12 @@ import java.net.URISyntaxException;
 import pl.nask.hsn2.framework.configuration.Configuration;
 import pl.nask.hsn2.framework.configuration.ConfigurationManager;
 
-// TODO: work in progress
-public class FrameworkContext {
+public final class FrameworkContext {
+	
     private static ConfigurationManager configurationManager;
 
+    private FrameworkContext() {}
+    
     public static Configuration getCurrentConfig() {
         assertNotNull(configurationManager, "ConfigurationManager");
         return configurationManager.getCurrentConfig();
@@ -49,7 +51,7 @@ public class FrameworkContext {
             throw new IllegalStateException("FrameworkContext not initialized properly: " + objName + " not registered");
     }
 
-    static void clean() {
+    public static void clean() {
         configurationManager = null;
     }
 

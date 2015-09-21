@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class MinValidator implements Validator {
+public final class MinValidator implements Validator {
 
     private final long min;
 

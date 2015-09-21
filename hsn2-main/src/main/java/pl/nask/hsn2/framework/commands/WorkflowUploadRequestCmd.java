@@ -32,7 +32,7 @@ import pl.nask.hsn2.bus.operations.WorkflowUploadReply;
 import pl.nask.hsn2.bus.operations.WorkflowUploadRequest;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class WorkflowUploadRequestCmd implements Command<WorkflowUploadRequest> {
+public final class WorkflowUploadRequestCmd implements Command<WorkflowUploadRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowUploadRequest> context)

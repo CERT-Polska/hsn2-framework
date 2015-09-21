@@ -27,8 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
-public class StartBehavior extends AbstractBpmnActivityBehavior implements ActivityBehavior, HSNBehavior {
-    private static final Logger LOG = LoggerFactory.getLogger(StartBehavior.class);
+public final class StartBehavior extends AbstractBpmnActivityBehavior implements ActivityBehavior, HSNBehavior {
+
+	private static final Logger LOG = LoggerFactory.getLogger(StartBehavior.class);
 
     @Override
     public void execute(ActivityExecution execution) throws Exception {

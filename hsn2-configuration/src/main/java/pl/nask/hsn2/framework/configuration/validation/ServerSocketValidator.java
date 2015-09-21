@@ -22,8 +22,9 @@ package pl.nask.hsn2.framework.configuration.validation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServerSocketValidator implements Validator {
-    private Map<String, String> sockets = new HashMap<String, String>();
+public final class ServerSocketValidator implements Validator {
+
+	private Map<String, String> sockets = new HashMap<String, String>();
 
     @Override
     public void validate(String key, String value) throws ValidationException {

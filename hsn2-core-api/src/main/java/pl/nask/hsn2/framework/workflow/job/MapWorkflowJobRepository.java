@@ -37,7 +37,7 @@ import pl.nask.hsn2.utils.IdGeneratorException;
  *
  *
  */
-public class MapWorkflowJobRepository implements WorkflowJobRepository {
+public final class MapWorkflowJobRepository implements WorkflowJobRepository {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MapWorkflowJobRepository.class);
 	
@@ -50,12 +50,12 @@ public class MapWorkflowJobRepository implements WorkflowJobRepository {
 	}
 	
 	@Override
-	public final WorkflowJob get(long id) {
+	public WorkflowJob get(long id) {
 		return jobs.get(id);
 	}
 
 	@Override
-	public final long add(WorkflowJob job) throws WorkflowJobRepositoryException {
+	public long add(WorkflowJob job) throws WorkflowJobRepositoryException {
 		long id;
 		try {
 			id = idGenerator.nextId();
@@ -68,7 +68,7 @@ public class MapWorkflowJobRepository implements WorkflowJobRepository {
 	}
 
 	@Override
-	public final List<WorkflowJobInfo> getJobs() {
+	public List<WorkflowJobInfo> getJobs() {
 		return new ArrayList<WorkflowJobInfo>(jobs.values());
 	}
 

@@ -29,10 +29,6 @@ public class MockedConfigurationManagerImpl extends ConfigurationManagerImpl {
     public MockedConfigurationManagerImpl() throws FileNotFoundException,
     IOException, ConfigurationException, ValidationException {
         super();
-    }
-
-    @Override
-    public Configuration getCurrentConfig() {
-        return new Configuration(null, null);
+        setCurrentConfig(new Configuration(null, null));
     }
 }

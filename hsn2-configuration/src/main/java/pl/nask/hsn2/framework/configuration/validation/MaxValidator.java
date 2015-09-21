@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class MaxValidator implements Validator {
+public final class MaxValidator implements Validator {
 
     private final long max;
 

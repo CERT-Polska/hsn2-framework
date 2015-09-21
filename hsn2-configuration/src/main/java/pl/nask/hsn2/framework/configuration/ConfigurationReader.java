@@ -19,14 +19,13 @@
 
 package pl.nask.hsn2.framework.configuration;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public interface ConfigurationReader<T> {
 
-    T parse(String filePath) throws FileNotFoundException, IOException, ConfigurationException;
+    T parse(String filePath) throws IOException, ConfigurationException;
 
-    T parse(InputStream conf) throws FileNotFoundException, IOException, ConfigurationException;
+    T parse(InputStream conf) throws IOException, ConfigurationException;
 
 }

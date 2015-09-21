@@ -30,8 +30,9 @@ import pl.nask.hsn2.os.OgnlRootObject;
  *
  *
  */
-public class OgnlExpression {
-    private Object expression;
+public final class OgnlExpression {
+
+	private Object expression;
 
     public OgnlExpression( String expressionString )
         throws OgnlException

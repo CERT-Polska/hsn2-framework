@@ -27,7 +27,7 @@ import pl.nask.hsn2.bus.operations.JobCancelRequest;
 import pl.nask.hsn2.bus.operations.Operation;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class JobCancelRequestCmd implements Command<JobCancelRequest> {
+public final class JobCancelRequestCmd implements Command<JobCancelRequest> {
 
 	@Override
 	public Operation execute(CommandContext<JobCancelRequest> context) throws CommandExecutionException {

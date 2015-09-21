@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class DefaultTasksStatistics implements TasksStatistics {
 
+	private static final long serialVersionUID = -7519026458956122916L;
+
 	/**
 	 * Internal map of running tasks.
 	 */

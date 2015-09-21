@@ -31,7 +31,7 @@ import pl.nask.hsn2.bus.operations.builder.WorkflowHistoryReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowVersionInfo;
 
-public class WorkflowHistoryRequestCmd implements Command<WorkflowHistoryRequest> {
+public final class WorkflowHistoryRequestCmd implements Command<WorkflowHistoryRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowHistoryRequest> context)

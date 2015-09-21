@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class NumberValidator implements Validator {
+public final class NumberValidator implements Validator {
 
     @Override
     public void validate(String key, String value) throws ValidationException {
