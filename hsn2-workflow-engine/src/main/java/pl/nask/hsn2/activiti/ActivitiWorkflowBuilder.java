@@ -35,8 +35,9 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
-public class ActivitiWorkflowBuilder implements WorkflowBuilder {
-    private ExtendedProcessDefinitionBuilder builder;
+public final class ActivitiWorkflowBuilder implements WorkflowBuilder {
+
+	private ExtendedProcessDefinitionBuilder builder;
 
     private ProcessDefinitionRegistry<PvmProcessDefinition> registry = new ProcessDefinitionRegistry<PvmProcessDefinition>();
 

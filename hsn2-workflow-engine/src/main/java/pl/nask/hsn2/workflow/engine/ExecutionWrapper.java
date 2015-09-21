@@ -33,6 +33,7 @@ import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
 import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 
 
 public final class ExecutionWrapper {
@@ -62,7 +63,7 @@ public final class ExecutionWrapper {
         initProcessState(jobId, objectId, userConfig, wdf, new DefaultTasksStatistics(), jobSuppressorHelper);
     }
 
-    public void initProcessState(long jobId, long objectId,	Map<String, Properties> userConfig, WorkflowDescriptor wdf, DefaultTasksStatistics stats, JobSuppressorHelper jobSuppressorHelper) {
+    public void initProcessState(long jobId, long objectId,	Map<String, Properties> userConfig, WorkflowDescriptor wdf, TasksStatistics stats, JobSuppressorHelper jobSuppressorHelper) {
         if (pvmExecution == null)
             throw new IllegalStateException("Process variables can be initialized in the PvmExecution only");
         if (getProcessContext() != null)
@@ -227,7 +228,7 @@ public final class ExecutionWrapper {
         return getProcessContext().getWaitingForResume();
     }
 
-    public DefaultTasksStatistics getJobStats() {
+    public TasksStatistics getJobStats() {
         return getProcessContext().getJobStats();
     }
 

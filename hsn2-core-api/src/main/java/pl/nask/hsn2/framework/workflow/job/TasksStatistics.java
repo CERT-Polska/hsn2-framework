@@ -57,4 +57,24 @@ public interface TasksStatistics {
 	int getFreeTaskBufferSpacesCount();
 	
 	int getWaitingTasksRequestCount();
+
+	/**
+	 * Update stats by new started task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Started task name.
+	 */
+	void taskStarted(String taskName);
+
+	/**
+	 * Update stats by finished task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Finished task name.
+	 */
+	void taskCompleted(String taskName);
+
+	void subprocessStarted();
+	
+	void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber);
 }

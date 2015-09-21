@@ -55,9 +55,8 @@ import pl.nask.hsn2.bus.recovery.Recoverable;
 import pl.nask.hsn2.bus.serializer.MessageSerializer;
 import pl.nask.hsn2.bus.serializer.protobuf.ProtoBufMessageSerializer;
 import pl.nask.hsn2.framework.core.WorkflowManager;
-import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class RbtFrameworkBus implements FrameworkBus, Recoverable {
+public final class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RbtFrameworkBus.class);
 

@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * 
  * This class is thread safe
  */
-public class GitWorkflowRepository implements WorkflowRepository {
+public final class GitWorkflowRepository implements WorkflowRepository {
 
 	private static class GitFilenameFilter implements FilenameFilter {
 		@Override
@@ -67,9 +67,10 @@ public class GitWorkflowRepository implements WorkflowRepository {
 
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(GitWorkflowRepository.class);
+
 	private FileRepository repo;
 	private File repoDir;
-	private FilenameFilter filenameFilter = new GitFilenameFilter();
+	private final FilenameFilter filenameFilter = new GitFilenameFilter();
 
 	public GitWorkflowRepository(String repositoryPath, boolean forceCreate)
 			throws WorkflowRepoException {

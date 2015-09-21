@@ -63,7 +63,7 @@ public class ConfigurationManagerImpl implements ConfigurationManager {
 
 	private static final String VALIDATORS_CONFIG_FILENAME = "validation.cfg";
 
-    public ConfigurationManagerImpl() throws FileNotFoundException, IOException, ConfigurationException, ValidationException {
+    public ConfigurationManagerImpl() throws IOException, ConfigurationException, ValidationException {
         // load validators config
         loadDefaultConfig();
     }

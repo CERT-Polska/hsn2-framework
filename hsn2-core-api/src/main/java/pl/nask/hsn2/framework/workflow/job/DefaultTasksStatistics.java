@@ -63,22 +63,12 @@ public final class DefaultTasksStatistics implements TasksStatistics {
 		return getValues(finished);
 	}
 
-	/**
-	 * Update stats by new started task or subprocess.
-	 * 
-	 * @param taskName
-	 *            Started task name.
-	 */
+	@Override
 	public final void taskStarted(String taskName) {
 		inc(taskName, started);
 	}
 
-	/**
-	 * Update stats by finished task or subprocess.
-	 * 
-	 * @param taskName
-	 *            Finished task name.
-	 */
+	@Override
 	public final void taskCompleted(String taskName) {
 		inc(taskName, finished);
 	}
@@ -98,6 +88,7 @@ public final class DefaultTasksStatistics implements TasksStatistics {
 		return map;
 	}
 
+	@Override
 	public void subprocessStarted() {
 		subprocessesStarted.incrementAndGet();
 	}
@@ -117,6 +108,7 @@ public final class DefaultTasksStatistics implements TasksStatistics {
 		return waitingTasksRequestsCount.get();
 	}
 
+	@Override
 	public synchronized void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber) {
 		freeTasksBufferCount.set(freeBufferSpaces);
 		waitingTasksRequestsCount.set(waitingTasksNumber);

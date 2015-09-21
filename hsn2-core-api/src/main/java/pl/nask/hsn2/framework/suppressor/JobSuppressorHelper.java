@@ -2,7 +2,7 @@ package pl.nask.hsn2.framework.suppressor;
 
 import java.util.Properties;
 
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 
 /**
  * Interface used while suppressing number of tasks done by single job.
@@ -25,7 +25,7 @@ public interface JobSuppressorHelper {
 	 * @param stats
 	 */
 	void addTaskRequest(String serviceName, String serviceLabel, int taskId, long objectDataId, Properties serviceParameters,
-			DefaultTasksStatistics stats);
+			TasksStatistics stats);
 
 	/**
 	 * Sends info about task completion to main suppressor effecting with releasing free space for other's waiting tasks
@@ -38,7 +38,7 @@ public interface JobSuppressorHelper {
 	 * @param stats
 	 *            Job statistics.
 	 */
-	void signalTaskCompletion(Long jobId, Integer taskId, DefaultTasksStatistics stats);
+	void signalTaskCompletion(Long jobId, Integer taskId, TasksStatistics stats);
 
 	/**
 	 * Provides actual tasks requests number waiting to be processed.

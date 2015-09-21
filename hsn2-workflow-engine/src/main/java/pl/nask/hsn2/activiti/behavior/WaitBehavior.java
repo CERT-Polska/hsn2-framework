@@ -27,9 +27,11 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.expressions.ExpressionResolver;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
-public class WaitBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
-    private static final Logger LOG = LoggerFactory.getLogger(WaitBehavior.class);
-    private final String condition;
+public final class WaitBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(WaitBehavior.class);
+
+	private final String condition;
     private final ExpressionResolver expressionResolver;
 
     public WaitBehavior(String condition, ExpressionResolver expressionResolver) {
@@ -64,7 +66,7 @@ public class WaitBehavior extends AbstractBpmnActivityBehavior implements HSNBeh
         if ("notify".equalsIgnoreCase(signalName)) {
             tryToLeave(execution);
         } else {
-            LOG.debug("Ignoring unsupported signal: {} with signalData: {}", signalName, signalData);
+            LOGGER.debug("Ignoring unsupported signal: {} with signalData: {}", signalName, signalData);
         }
     }
 

@@ -11,9 +11,10 @@ import org.slf4j.LoggerFactory;
 import pl.nask.hsn2.bus.connector.process.ProcessConnectorException;
 import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 
 public final class JobSuppressorHelperImpl implements JobSuppressorHelper {
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSuppressorHelperImpl.class);
 	private BlockingDeque<TaskRequestDataContainer> waitingRequests = new LinkedBlockingDeque<>();
 	private final Semaphore semaphore;
@@ -43,7 +44,7 @@ public final class JobSuppressorHelperImpl implements JobSuppressorHelper {
 
 	@Override
 	public void addTaskRequest(String serviceName, String serviceLabel, int taskId, long objectDataId, Properties serviceParameters,
-			DefaultTasksStatistics stats) {
+			TasksStatistics stats) {
 		LOGGER.debug("Adding new task to waiting list.", serviceLabel);
 
 		// Add to waiting requests.
@@ -59,7 +60,7 @@ public final class JobSuppressorHelperImpl implements JobSuppressorHelper {
 	}
 
 	@Override
-	public void signalTaskCompletion(Long jobId, Integer taskId, DefaultTasksStatistics stats) {
+	public void signalTaskCompletion(Long jobId, Integer taskId, TasksStatistics stats) {
 		// Release semaphore.
 		semaphore.release();
 		stats.updateSuppressorStats(getFreeBuforSpacesCount(), getWaitingTasksRequestsCount());

@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * 
  * 
  */
-public class Configuration {
+public final class Configuration {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 

@@ -38,7 +38,7 @@ import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.ProcessDefinitionRegistry;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 import pl.nask.hsn2.suppressor.JobSuppressorUtils;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 import pl.nask.hsn2.workflow.engine.SubprocessParameters;
@@ -80,7 +80,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
 		Properties params = ServiceParam.merge(serviceParameters, wrapper.getUserConfig().get(serviceLabel), true);
 		SubprocessParameters processParams = wrapper.getSubprocessParameters();
 		long objectDataId = (processParams != null) ? processParams.getObjectDataId() : 0L;
-		DefaultTasksStatistics stats = wrapper.getJobStats();
+		TasksStatistics stats = wrapper.getJobStats();
 
 		JobSuppressorHelper jobSuppressorHelper = wrapper.getProcessContext().getJobSuppressorHelper();
 		if (jobSuppressorHelper == null) {
@@ -140,7 +140,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
     	else {
     		LOGGER.info("Ignoring TaskError:[reqId={},descr={}]",reqId,errorDescription);
     		ExecutionWrapper wrapper = new ExecutionWrapper(execution);
-    		DefaultTasksStatistics stats = wrapper.getJobStats();
+    		TasksStatistics stats = wrapper.getJobStats();
     		if (stats != null) {
     			stats.taskCompleted(serviceName);
     		}
@@ -191,7 +191,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         LOGGER.debug("TaskCompleted");
 
         ExecutionWrapper wrapper = new ExecutionWrapper(execution);
-        DefaultTasksStatistics stats = wrapper.getJobStats();
+        TasksStatistics stats = wrapper.getJobStats();
         if (stats != null) {
             stats.taskCompleted(serviceName);
         }

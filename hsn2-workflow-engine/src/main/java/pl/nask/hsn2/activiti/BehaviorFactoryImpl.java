@@ -40,8 +40,9 @@ import pl.nask.hsn2.framework.workflow.engine.ProcessDefinitionRegistry;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
 
-public class BehaviorFactoryImpl implements BehaviorFactory {
-    private final ActivityBehavior emptyBehavior = new EmptyBehavior();
+public final class BehaviorFactoryImpl implements BehaviorFactory {
+
+	private final ActivityBehavior emptyBehavior = new EmptyBehavior();
 
     private ExpressionResolver expressionResolver;
 

@@ -1,6 +1,7 @@
 package pl.nask.hsn2.framework.bus;
 
-public class JobReminderData implements Comparable<Long> {
+public final class JobReminderData implements Comparable<Long> {
+
 	private final long jobId;
 	private final long time;
 
@@ -19,7 +20,9 @@ public class JobReminderData implements Comparable<Long> {
 
 	@Override
 	public String toString() {
-		return JobReminderData.class.getSimpleName() + "{jobId=" + jobId + ",time=" + time + "}";
+		return String.format("%s {jobId=%s, time=%s}",
+				JobReminderData.class.getSimpleName(),
+				jobId, time);
 	}
 
 	@Override
@@ -31,5 +34,14 @@ public class JobReminderData implements Comparable<Long> {
 		} else {
 			return 0;
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof JobReminderData) {
+			JobReminderData jrdObj = (JobReminderData) obj;
+			return (jrdObj.jobId == jobId) && (jrdObj.time == time);
+		}
+		return false;
 	}
 }

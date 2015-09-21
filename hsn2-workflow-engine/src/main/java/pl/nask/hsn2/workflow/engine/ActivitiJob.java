@@ -46,8 +46,9 @@ import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ActivitiJob.class);
+public final class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ActivitiJob.class);
 
     private final ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflowDefinitionDescriptor;
 

@@ -2,7 +2,7 @@ package pl.nask.hsn2.suppressor;
 
 import java.util.Properties;
 
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 
 public final class TaskRequestDataContainer {
 	private final String serviceName;
@@ -10,10 +10,10 @@ public final class TaskRequestDataContainer {
 	private final int taskId;
 	private final long objectDataId;
 	private final Properties params;
-	private final DefaultTasksStatistics stats;
+	private final TasksStatistics stats;
 
 	public TaskRequestDataContainer(String serviceName, String serviceId, int taskId, long objectDataId, Properties params,
-			DefaultTasksStatistics stats) {
+			TasksStatistics stats) {
 		this.serviceName = serviceName;
 		this.serviceId = serviceId;
 		this.taskId = taskId;
@@ -42,7 +42,7 @@ public final class TaskRequestDataContainer {
 		return params;
 	}
 
-	public DefaultTasksStatistics getStats() {
+	public TasksStatistics getStats() {
 		return stats;
 	}
 }

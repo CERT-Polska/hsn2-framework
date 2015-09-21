@@ -49,9 +49,9 @@ import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
 import pl.nask.hsn2.utils.FileIdGenerator;
 import pl.nask.hsn2.utils.IdGenerator;
 
-public class ActivitiWorkflowEngine implements WorkflowEngine {
+public final class ActivitiWorkflowEngine implements WorkflowEngine {
 
-	private final static Logger LOG = LoggerFactory.getLogger(ActivitiWorkflowEngine.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ActivitiWorkflowEngine.class);
 
 	private WorkflowJobRepository jobRepository;
 	private final int tasksSuppressorThreshold;
@@ -84,27 +84,27 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 
 	@Override
 	public void taskAccepted(long jobId, int taskId) {
-		LOG.debug("Got TaskAccepted (jobId={}, taskId={})", new Object[] { jobId, taskId });
+		LOGGER.debug("Got TaskAccepted (jobId={}, taskId={})", new Object[] { jobId, taskId });
 		try {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsAccepted(taskId);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.warn("Got TaskAccepted for non existant job (jobId={}, taskId={})", jobId, taskId);
+			LOGGER.warn("Got TaskAccepted for non existant job (jobId={}, taskId={})", jobId, taskId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, taskId);
 		} catch (Exception e) {
-			LOG.warn("Error marking task {} in job {} as accepted", taskId, jobId);
-			LOG.warn(e.getMessage(), e);
+			LOGGER.warn("Error marking task {} in job {} as accepted", taskId, jobId);
+			LOGGER.warn(e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public void taskCompleted(long jobId, int requestId, Set<Long> newObjects) {
-		LOG.debug("Got TaskCompleted (jobId={}, taskId={}, newObjects={})", new Object[] { jobId, requestId, newObjects });
+		LOGGER.debug("Got TaskCompleted (jobId={}, taskId={}, newObjects={})", new Object[] { jobId, requestId, newObjects });
 		try {
 			WorkflowJob job = getJob(jobId);
 			job.markTaskAsCompleted(requestId, newObjects);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.warn("Got TaskCompleted for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
+			LOGGER.warn("Got TaskCompleted for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
 	}
@@ -122,20 +122,20 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 		try {
 			return jobRepository.getJobs();
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot get list of jobs from jobs repository.", e);
+			LOGGER.error("Cannot get list of jobs from jobs repository.", e);
 			return new ArrayList<WorkflowJobInfo>();
 		}
 	}
 
 	@Override
 	public void taskError(long jobId, int requestId, TaskErrorReasonType reason, String description) {
-		LOG.debug("Got TaskError (jobId={}, taskId={}, reason={}, errorMsg={})", new Object[] { jobId, requestId, reason, description });
+		LOGGER.debug("Got TaskError (jobId={}, taskId={}, reason={}, errorMsg={})", new Object[] { jobId, requestId, reason, description });
 		try {
 			WorkflowJob job = getJob(jobId);
 			// TODO: policy dependent, should be configurable (by the workflow?)
 			job.markTaskAsFailed(requestId, reason, description);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.warn("Got TaskError for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
+			LOGGER.warn("Got TaskError for non existant job, ignore (jobId={}, taskId={})", jobId, requestId);
 			((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, null, requestId);
 		}
 	}
@@ -146,7 +146,7 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 			WorkflowJob job = getJob(jobId);
 			job.resume();
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot resume job.", e);
+			LOGGER.error("Cannot resume job.", e);
 		}
 	}
 
@@ -156,7 +156,7 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 		try {
 			job = jobRepository.get(jobId);
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot find job id.", e);
+			LOGGER.error("Cannot find job id.", e);
 		}
 		return job;
 	}
@@ -205,7 +205,7 @@ public class ActivitiWorkflowEngine implements WorkflowEngine {
 		try {
 			jobRepository.get(jobId).cancel();
 		} catch (WorkflowJobRepositoryException e) {
-			LOG.error("Cannot find job id.", e);
+			LOGGER.error("Cannot find job id.", e);
 		}
 		
 	}

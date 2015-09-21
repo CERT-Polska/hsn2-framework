@@ -26,12 +26,12 @@ import org.activiti.engine.impl.pvm.runtime.ExecutionImpl;
 
 import pl.nask.hsn2.workflow.engine.ProcessContext;
 
-public class ExtendedExecutionImpl extends ExecutionImpl {
+public final class ExtendedExecutionImpl extends ExecutionImpl {
 	// variable names
-    public final static String TASK_ID = "task_id";
-    public final static String PARENT_EXECUTION = "parent_execution";
-    public final static String CHILD_EXECUTIONS = "child_executions";
-    public final static String PROCESS_CONTEXT= "process_context";
+    public static final String TASK_ID = "task_id";
+    public static final String PARENT_EXECUTION = "parent_execution";
+    public static final String CHILD_EXECUTIONS = "child_executions";
+    public static final String PROCESS_CONTEXT= "process_context";
    
 	private static final long serialVersionUID = -3070016232270340831L;
 	private ProcessContext processContext;
@@ -225,7 +225,6 @@ public class ExtendedExecutionImpl extends ExecutionImpl {
     }
 
     public PvmExecution findExecuionWithTaskId(int taskId) {
-        PvmExecution ret = findExecutionWithVariable(TASK_ID, taskId);
-        return ret;
+        return findExecutionWithVariable(TASK_ID, taskId);
     }       
 }
