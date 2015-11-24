@@ -21,9 +21,6 @@ package pl.nask.hsn2.framework.commands;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import pl.nask.hsn2.bus.dispatcher.Command;
 import pl.nask.hsn2.bus.dispatcher.CommandContext;
 import pl.nask.hsn2.bus.dispatcher.CommandExecutionException;
@@ -37,8 +34,6 @@ import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
 public final class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
-	private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowListRequestCmd.class);
-
 	@Override
 	public Operation execute(CommandContext<WorkflowListRequest> context)
 			throws CommandExecutionException {
@@ -56,7 +51,6 @@ public final class WorkflowListRequestCmd implements Command<WorkflowListRequest
 
 				builder.addWorkflowBasicInfo(
 						new WorkflowBasicInfo(descriptor.getName(), enabled));
-				LOGGER.debug("Added workflow: {}, {}", descriptor.getName(), enabled);
 			}
 			return builder.build();
 		} catch (Exception e) {

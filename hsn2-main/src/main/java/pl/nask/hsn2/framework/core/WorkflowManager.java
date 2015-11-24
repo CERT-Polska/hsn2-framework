@@ -21,11 +21,11 @@ package pl.nask.hsn2.framework.core;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.activiti.engine.impl.pvm.PvmProcessDefinition;
 import org.apache.commons.io.IOUtils;
@@ -203,27 +203,25 @@ public final class WorkflowManager {
     }
 
     public List<WorkflowDescriptor> getWorkflowDefinitions(boolean enabledOnly) throws WorkflowRepoException {
-        List<WorkflowDescriptor> res = new ArrayList<WorkflowDescriptor>(workflowDefinitionManager.getWorkflowDefinitions(enabledOnly));
-        LOGGER.debug("[getWorkflowDefinitions] Got {} workflows from WorkflowDescriptorManager", res.size());
-        Set<String> names = new HashSet<String>();
-        for (WorkflowDescriptor d: res) {
-            boolean added = names.add(d.getName());
-            if (!added) {
-            	LOGGER.debug("[getWorkflowDefinitions] Got duplicated workflow: {}", d.getName());
-            }
-        }
-        if (!enabledOnly) {
-	        List<String> workflowsInRepo = repository.listWorkflowNames();
-	        for (String name: workflowsInRepo) {
-	            if (!names.contains(name)) { //non-nulls are already on the list
-                	ProcessBasedWorkflowDescriptor<PvmProcessDefinition> desc = new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>(null, name, null);
-                    res.add(desc);
-                    LOGGER.debug("[getWorkflowDefinitions] Added workflow from repository: {}", desc.getName());
-                }
-            }
-        }
+    	Set<String> names = new TreeSet<>();
 
-        return res;
+		List<WorkflowDescriptor> descriptors = new ArrayList<>(workflowDefinitionManager.getWorkflowDefinitions(enabledOnly));
+		for (WorkflowDescriptor descriptor : descriptors) {
+			names.add(descriptor.getName());
+		}
+
+		if (!enabledOnly) {
+			List<String> workflowNames = repository.listWorkflowNames();
+			names.addAll(workflowNames);
+		}
+
+		List<WorkflowDescriptor> workflows = new ArrayList<>();
+		for (String name : names) {
+			ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflow = new ProcessBasedWorkflowDescriptor<PvmProcessDefinition>(null, name, null);
+			workflows.add(workflow);
+		}
+
+		return workflows;
     }
 
 	public WorkflowDescriptor getWorkflowDefinition(
