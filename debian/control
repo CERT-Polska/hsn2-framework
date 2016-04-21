@@ -7,6 +7,6 @@ Standards-Version: 3.9.3
 
 Package: hsn2-framework
 Architecture: all
-Depends: ${misc:Depends}, hsn2-commons-debian, java-wrappers, openjdk-7-jre, jsvc, git
+Depends: ${misc:Depends}, hsn2-commons-debian, java-wrappers, openjdk-7-jre, jsvc, rabbitmq-server, git
 Homepage: http://www.honeyspider.net
 Description: HSN2 Framework Component.
