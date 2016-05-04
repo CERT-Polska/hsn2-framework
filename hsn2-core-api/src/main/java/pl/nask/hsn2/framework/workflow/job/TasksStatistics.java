@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 package pl.nask.hsn2.framework.workflow.job;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ import java.util.Map;
  * 
  *
  */
-public interface TasksStatistics {
+public interface TasksStatistics extends Serializable {
 
 	/**
 	 * Gets a map of started tasks. Each key in the map
@@ -53,4 +54,28 @@ public interface TasksStatistics {
     Map<String, Integer> getFinished();
 
 	int getSubprocessesStarted();
+	
+	int getFreeTaskBufferSpacesCount();
+	
+	int getWaitingTasksRequestCount();
+
+	/**
+	 * Update stats by new started task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Started task name.
+	 */
+	void taskStarted(String taskName);
+
+	/**
+	 * Update stats by finished task or subprocess.
+	 * 
+	 * @param taskName
+	 *            Finished task name.
+	 */
+	void taskCompleted(String taskName);
+
+	void subprocessStarted();
+	
+	void updateSuppressorStats(int freeBufferSpaces, int waitingTasksNumber);
 }

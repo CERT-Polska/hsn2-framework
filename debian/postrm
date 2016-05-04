@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+if [ "$1" == "purge" ]; then
+	rm -rf /etc/hsn2/workflows/*
+	rm -rf /etc/hsn2/workflows/.git
+fi
+
+#DEBHELPER#

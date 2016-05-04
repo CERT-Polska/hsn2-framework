@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,10 @@
 package pl.nask.hsn2.workflow.engine;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.activiti.engine.impl.pvm.PvmExecution;
 import org.activiti.engine.impl.pvm.PvmProcessDefinition;
@@ -31,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.activiti.ExtendedExecutionImpl;
-import pl.nask.hsn2.activiti.behavior.FatalTaskErrorException;
 import pl.nask.hsn2.activiti.behavior.HSNBehavior;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnectorException;
@@ -39,14 +40,15 @@ import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.bus.operations.ObjectData;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
 import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJob;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
+public final class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ActivitiJob.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ActivitiJob.class);
 
     private final ProcessBasedWorkflowDescriptor<PvmProcessDefinition> workflowDefinitionDescriptor;
 
@@ -55,19 +57,17 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     private long jobId;
 
     private TaskErrorReasonType failureReason;
-    private boolean running = false;
-
-    private String failureDescription;
+    private volatile boolean running = false;
+    private volatile boolean cancelled = false;
+    private Map<String, Integer> errorMessages = new ConcurrentHashMap<>();
 
     private Map<String, Properties> userConfig;
 
     private long startTime = 0;
     private long endTime = 0;
 
-    private String lastActiveStepName;
-
+    private String lastActiveStepName = "initialization";
     private long objectDataId;
-
     private DefaultTasksStatistics stats = new DefaultTasksStatistics();
 
 	public ActivitiJob(PvmProcessDefinition processDefinition,
@@ -79,41 +79,48 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized void start(long jobId) {
+    public synchronized void start(long jobId, JobSuppressorHelper jobSuppressorHelper) {
         if (processInstance != null) {
             throw new IllegalStateException("Job already started");
         } else {
             processInstance = processDefinition.createProcessInstance();
-            this.objectDataId = createInitialObject(jobId);
-            ExecutionWrapper utils = new ExecutionWrapper(processInstance);
-            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats);
-            this.startTime  = System.currentTimeMillis();
-            processInstance.start();
+            
+            startTime = System.currentTimeMillis();
             this.jobId = jobId;
-            this.running = true;
-            ((FrameworkBus)BusManager.getBus()).jobStarted(jobId);
-            LOGGER.info("Job started (jobId={}, userConfig={}, workflowDefinition={}, initialObjectId={}", new Object[] {jobId, userConfig, workflowDefinitionDescriptor, objectDataId});
+            
+            try{
+	            this.objectDataId = createInitialObject(jobId);
+	            ExecutionWrapper utils = new ExecutionWrapper(processInstance);
+	            utils.initProcessState(jobId, objectDataId, userConfig, workflowDefinitionDescriptor, stats, jobSuppressorHelper);
+	            processInstance.start();
+	            this.running = true;
+	            ((FrameworkBus)BusManager.getBus()).jobStarted(jobId);
+	            updateJobDetails();
+	            LOGGER.info("Job started (jobId={}, userConfig={}, workflowDefinition={}, initialObjectId={}", new Object[] {jobId, userConfig, workflowDefinitionDescriptor, objectDataId});
+            }
+            catch(ObjectStoreConnectorException e){
+            	failureReason = TaskErrorReasonType.OBJ_STORE;
+            	addErrorMessage("Problem with connection to objectStore: " + e.getMessage());
+            	endTime = System.currentTimeMillis();
+            	LOGGER.error(e.getMessage(), e);
+            }
         }
     }
 
-    private long createInitialObject(long jobId) {
-    	try {
-	        return ((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendObjectStoreData(jobId, new ObjectData());
-    	} catch (ObjectStoreConnectorException e) {
-    		throw new IllegalStateException(e);
-    	}
+    private long createInitialObject(long jobId) throws ObjectStoreConnectorException {
+    	return ((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendObjectStoreData(jobId, new ObjectData());
     }
 
     @Override
-    public synchronized boolean isEnded() {
-        return processInstance.isEnded();
+    public boolean isEnded() {
+        return !running;
     }
 
     @Override
-    public synchronized JobStatus getStatus() {
+    public JobStatus getStatus() {
         if (isFailed()) {
             return JobStatus.FAILED;
-        } else if (isAborted()) {
+        } else if (isCancelled()) {
             return JobStatus.CANCELLED;
         } else if (isEnded()) {
             return JobStatus.COMPLETED;
@@ -122,8 +129,8 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
         }
     }
 
-    private boolean isAborted() {
-        return false;
+    private boolean isCancelled() {
+        return cancelled;
     }
 
     private boolean isFailed() {
@@ -141,6 +148,9 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
                 execution.markTaskAsAccepted();
             }
         } else {
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
             LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as accepted", jobId, requestId);
         }
     }
@@ -173,10 +183,11 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
                     for (Long objectId: newObjects) {
                         execution.subprocess(workflowDefinitionDescriptor, objectId);
                     }
-                    resume();
+                    resumeAndUpdateJobDetails();
                 }
                 try {
                 	execution.signal("completeTask", requestId);
+                	updateJobDetails();
                 } catch (Exception e) {
                 	 LOGGER.error("Error processing job", e);
                      markTaskAsFailed(requestId, TaskErrorReasonType.DEFUNCT, e.getMessage());
@@ -187,11 +198,14 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
             	finishJob();
             }
         } else {
-            LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
         }
     }
 
-    public synchronized long getId() {
+    public long getId() {
         return jobId;
     }
 
@@ -200,11 +214,11 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     	if (running) {
     		ExecutionWrapper exec = findExecutionForTaskId(requestId);
     		try {
-    			this.failureDescription = description;
+    			addErrorMessage(description);
     			exec.signal("taskFailed", new Object[] {requestId, reason, description});
+    			updateJobDetails();
     		} catch(Exception e) {
     			this.failureReason = reason;
-    			this.failureDescription = description;
     			this.lastActiveStepName = getActiveStepName();
     			LOGGER.info("Job failed (jobId={}, taskId={}, stepName={}, reason={}, errorMsg={})", new Object[] {jobId, requestId, this.lastActiveStepName, reason, description});
     			processInstance.deleteCascade(description);
@@ -212,63 +226,104 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     		}
     	} else {
     		LOGGER.debug("Job (id={}) is not running (already failed). Can not mark task (id={}) as failed. Ignoring new failure reason {} ({})", new Object[] {jobId, requestId, reason, description});
+    		
+        	// Send reminder that job is already finished.
+        	((FrameworkBus) BusManager.getBus()).jobFinishedReminder(jobId, getStatus(), requestId);
+
+        	LOGGER.debug("Job (id={}) is not running. Can not mark task (id={}) as completed", jobId, requestId);
+
     	}
     }
-    
+
+	private void addErrorMessage(String msg) {
+		Integer i = errorMessages.get(msg);
+		if (i == null) {
+			i = 1;
+		} else {
+			i++;
+		}
+		errorMessages.put(msg, i);
+	}
+
     private void finishJob(){
     	this.endTime  = System.currentTimeMillis();
 		this.running = false;
+		updateJobDetails();
+        ExecutionWrapper utils = new ExecutionWrapper(processInstance);
+        utils.getProcessContext().removeJobSuppressorHelper();
+
 		try{
 			((FrameworkBus)BusManager.getBus()).getObjectStoreConnector().sendJobFinished(jobId, getStatus());
 		}
 		catch (ObjectStoreConnectorException e) {
 			LOGGER.error("Error when sending JobFinished to store!",e);
 		}
+		LOGGER.info("Job {} {} time: {}",new Object[]{jobId,getStatus(),endTime - startTime});
     }
     
     @Override
     public synchronized void resume() {
-        if (running) {
-            ExecutionWrapper wrapper = new ExecutionWrapper(processInstance);
-            try {
-                wrapper.signal("resume");
-            } catch (Exception e) {
-                LOGGER.error("Error processing job", e);
-                markTaskAsFailed(wrapper.getTaskId() == null ? -1 : wrapper.getTaskId(), TaskErrorReasonType.DEFUNCT, e.getMessage());
-            }
-        } else {
-            LOGGER.debug("Job (id={}) is not running. Can not resume it's processes", jobId);
-        }
+    	if (running) {
+    		resumeAndUpdateJobDetails();
+    	} else {
+    		LOGGER.debug("Job (id={}) is not running. Can not resume it's processes", jobId);
+    	}
     }
 
-    @Override
-    public synchronized String getActiveStepName() {
-        ActivityImpl activity = (ActivityImpl) processInstance.getActivity();
+    private void resumeAndUpdateJobDetails() {
+    	ExecutionWrapper wrapper = new ExecutionWrapper(processInstance);
+    	try {
+    		wrapper.signal("resume");
+    		updateJobDetails();
+    	} catch (Exception e) {
+    		LOGGER.error("Error processing job", e);
+    		markTaskAsFailed(wrapper.getTaskId() == null ? -1 : wrapper.getTaskId(), TaskErrorReasonType.DEFUNCT, e.getMessage());
+    	}
+    }
+
+	private void updateJobDetails(){
+    	ActivityImpl activity = (ActivityImpl) processInstance.getActivity();
         if (activity != null) {
             HSNBehavior behavior = (HSNBehavior) activity.getActivityBehavior();
-            return behavior.getStepName();
-        } else {
-            return lastActiveStepName;
+            lastActiveStepName = behavior.getStepName();
         }
+        running = !processInstance.isEnded();
+    }
+    
+    @Override
+    public synchronized String getActiveStepName() {
+    	return lastActiveStepName;
+    }
+    
+    @Override
+    public boolean isErrorMessagesReceived(){
+    	return !errorMessages.isEmpty();
+    }
+    
+    @Override
+    public String getErrorMessage() {
+    	StringBuilder sb = new StringBuilder();
+    	for (Entry<String, Integer> errMsgEntry : errorMessages.entrySet()) {
+    		if (sb.length() != 0) {
+    			sb.append("; ");
+    		}
+			sb.append(errMsgEntry.getKey()).append(" (").append(errMsgEntry.getValue()).append(")");
+		}
+        return sb.toString();
     }
 
     @Override
-    public synchronized String getErrorMessage() {
-        return failureDescription;
-    }
-
-    @Override
-    public synchronized Map<String, Properties> getUserConfig() {
+    public Map<String, Properties> getUserConfig() {
         return userConfig;
     }
 
     @Override
-    public synchronized long getStartTime() {
+    public long getStartTime() {
         return startTime;
     }
 
     @Override
-    public synchronized long getEndTime() {
+    public long getEndTime() {
         return endTime;
     }
 
@@ -279,17 +334,40 @@ public class ActivitiJob implements WorkflowJob, WorkflowJobInfo {
     }
 
     @Override
-    public synchronized String getWorkflowRevision() {
+    public String getWorkflowRevision() {
         return workflowDefinitionDescriptor.getId();
     }
     
     @Override
-    public synchronized String getWorkflowName() {
+    public String getWorkflowName() {
     	return workflowDefinitionDescriptor.getName();
     }
 
     @Override
-    public synchronized DefaultTasksStatistics getTasksStatistics() {
+    public DefaultTasksStatistics getTasksStatistics() {
         return stats;
+    }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("[")
+    	.append("jobID:").append(jobId)
+    	.append(", status:").append(getStatus().name().toString())
+    	.append(", workflow name:").append(workflowDefinitionDescriptor.getName())
+    	.append(", last step:").append(lastActiveStepName)
+    	.append(", active tasks:").append(getActiveSubtasksCount())
+    	.append("]");
+    	return sb.toString();
+    }
+    
+    @Override
+    public synchronized void cancel(){
+    	if (running){
+    		cancelled = true;
+	    	this.lastActiveStepName = getActiveStepName();
+	    	processInstance.deleteCascade("Cancelled by user.");
+	    	finishJob();
+    	}
     }
 }

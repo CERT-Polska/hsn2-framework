@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 package pl.nask.hsn2.framework.commands;
 
+import org.activiti.engine.impl.util.json.JSONObject;
+
 import pl.nask.hsn2.bus.dispatcher.Command;
 import pl.nask.hsn2.bus.dispatcher.CommandContext;
 import pl.nask.hsn2.bus.dispatcher.CommandExecutionException;
@@ -33,7 +35,7 @@ import pl.nask.hsn2.bus.operations.builder.ObjectDataBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class InfoRequestCmd implements Command<InfoRequest> {
+public final class InfoRequestCmd implements Command<InfoRequest> {
 
 	@Override
 	public Operation execute(CommandContext<InfoRequest> context)
@@ -75,16 +77,24 @@ public class InfoRequestCmd implements Command<InfoRequest> {
         }
         objDataBuilder.addIntAttribute("job_started_subprocess_count", workflowJobInfo.getTasksStatistics().getSubprocessesStarted());
 
-        if (workflowJobInfo.getErrorMessage() != null) {
+        if (workflowJobInfo.isErrorMessagesReceived()) {
         	objDataBuilder.addStringAttribute("job_error_message", workflowJobInfo.getErrorMessage());
         }
         objDataBuilder.addStringAttribute("job_workflow_name", workflowJobInfo.getWorkflowName());
         objDataBuilder.addStringAttribute("job_workflow_revision", workflowJobInfo.getWorkflowRevision());
-        objDataBuilder.addStringAttribute("job_custom_params", workflowJobInfo.getUserConfig().toString());
+        //objDataBuilder.addStringAttribute("job_custom_params", workflowJobInfo.getUserConfig().toString());
+        objDataBuilder.addStringAttribute("job_custom_params", new JSONObject(workflowJobInfo.getUserConfig()).toString());
 
 		objDataBuilder.addMaps("task_count_", workflowJobInfo
 				.getTasksStatistics().getStarted(), workflowJobInfo
 				.getTasksStatistics().getFinished());
+
+		int suppressorFreeSlots = workflowJobInfo.getTasksStatistics().getFreeTaskBufferSpacesCount();
+		int suppressorWaitListSize = workflowJobInfo.getTasksStatistics().getWaitingTasksRequestCount();
+		if (suppressorFreeSlots > -1 && suppressorWaitListSize > -1) {
+			objDataBuilder.addIntAttribute("suppressor_free_slots", suppressorFreeSlots);
+			objDataBuilder.addIntAttribute("suppressor_waiting_requests", suppressorWaitListSize);
+		}
 
 		return objDataBuilder.build();
 	}

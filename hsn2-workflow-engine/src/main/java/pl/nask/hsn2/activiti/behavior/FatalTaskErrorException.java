@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,11 @@ public class FatalTaskErrorException extends RuntimeException {
 	public FatalTaskErrorException(String message) {
 		super(message);
 	}
+
+	public FatalTaskErrorException(String message, Throwable thw) {
+		super(message, thw);
+	}
+
 	public FatalTaskErrorException(Throwable thw) {
 		super(thw);
 	}

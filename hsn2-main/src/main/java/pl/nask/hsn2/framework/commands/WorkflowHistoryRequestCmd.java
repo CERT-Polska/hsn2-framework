@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ import pl.nask.hsn2.bus.operations.builder.WorkflowHistoryReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowVersionInfo;
 
-public class WorkflowHistoryRequestCmd implements Command<WorkflowHistoryRequest> {
+public final class WorkflowHistoryRequestCmd implements Command<WorkflowHistoryRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowHistoryRequest> context)

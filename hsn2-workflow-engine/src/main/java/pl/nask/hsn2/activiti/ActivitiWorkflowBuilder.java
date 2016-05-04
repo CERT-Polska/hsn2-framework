@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,9 @@ import pl.nask.hsn2.framework.workflow.hwl.ProcessDefinition;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
-public class ActivitiWorkflowBuilder implements WorkflowBuilder {
-    private ExtendedProcessDefinitionBuilder builder;
+public final class ActivitiWorkflowBuilder implements WorkflowBuilder {
+
+	private ExtendedProcessDefinitionBuilder builder;
 
     private ProcessDefinitionRegistry<PvmProcessDefinition> registry = new ProcessDefinitionRegistry<PvmProcessDefinition>();
 

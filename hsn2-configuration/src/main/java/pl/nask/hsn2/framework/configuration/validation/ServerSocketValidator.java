@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,9 @@ package pl.nask.hsn2.framework.configuration.validation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServerSocketValidator implements Validator {
-    private Map<String, String> sockets = new HashMap<String, String>();
+public final class ServerSocketValidator implements Validator {
+
+	private Map<String, String> sockets = new HashMap<String, String>();
 
     @Override
     public void validate(String key, String value) throws ValidationException {

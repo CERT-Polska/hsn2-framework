@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@ package pl.nask.hsn2.expressions;
 
 import pl.nask.hsn2.bus.connector.objectstore.ObjectStoreConnector;
 
-public class OgnlExpressionResolver implements ExpressionResolver {
+public final class OgnlExpressionResolver implements ExpressionResolver {
 
     private final ObjectStoreConnector connector;
 
     public OgnlExpressionResolver(ObjectStoreConnector connector) {
     	if (connector == null) {
-    		throw new NullPointerException("ObjectStoreConnector");
+    		throw new IllegalArgumentException("ObjectStoreConnector cannot be null!");
     	}
         this.connector = connector;
     }

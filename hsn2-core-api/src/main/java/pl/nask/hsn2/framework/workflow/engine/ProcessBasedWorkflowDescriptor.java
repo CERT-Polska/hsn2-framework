@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,9 @@ import pl.nask.hsn2.framework.workflow.hwl.Workflow;
  */
 public class ProcessBasedWorkflowDescriptor<T> extends DefaultWorkflowDescriptor {
 
-    private ProcessDefinitionRegistry<T> processDefinitionRegistry = null;
+	private static final long serialVersionUID = -4330734484129743718L;
+
+	private transient ProcessDefinitionRegistry<T> processDefinitionRegistry = null;
 
     public ProcessBasedWorkflowDescriptor(String id, String name, Workflow workflow) {
     	super (id, name, workflow);

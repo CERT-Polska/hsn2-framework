@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import pl.nask.hsn2.utils.IdGeneratorException;
  *
  *
  */
-public class MapWorkflowJobRepository implements WorkflowJobRepository {
+public final class MapWorkflowJobRepository implements WorkflowJobRepository {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MapWorkflowJobRepository.class);
 	
@@ -50,12 +50,12 @@ public class MapWorkflowJobRepository implements WorkflowJobRepository {
 	}
 	
 	@Override
-	public final WorkflowJob get(long id) {
+	public WorkflowJob get(long id) {
 		return jobs.get(id);
 	}
 
 	@Override
-	public final long add(WorkflowJob job) throws WorkflowJobRepositoryException {
+	public long add(WorkflowJob job) throws WorkflowJobRepositoryException {
 		long id;
 		try {
 			id = idGenerator.nextId();
@@ -68,8 +68,30 @@ public class MapWorkflowJobRepository implements WorkflowJobRepository {
 	}
 
 	@Override
-	public final List<WorkflowJobInfo> getJobs() {
+	public List<WorkflowJobInfo> getJobs() {
 		return new ArrayList<WorkflowJobInfo>(jobs.values());
+	}
+
+	@Override
+	public void remove(long id) throws WorkflowJobRepositoryException {
+		WorkflowJob job = jobs.get(id);
+		if (job == null) {
+			return;
+		}
+		if (!job.isEnded()) {
+			throw new WorkflowJobRepositoryException("Running job cannot be removed from repository.");
+		}
+		jobs.remove(id);
+	}
+
+	@Override
+	public void purgeEndedBefore(long timestamp)
+			throws WorkflowJobRepositoryException {
+		for (Map.Entry<Long, WorkflowJob> entry : jobs.entrySet()) {
+			if (entry.getValue().isEnded() && entry.getValue().getEndTime() < timestamp) {
+				jobs.remove(entry.getKey());
+			}
+		}
 	}
 
 }

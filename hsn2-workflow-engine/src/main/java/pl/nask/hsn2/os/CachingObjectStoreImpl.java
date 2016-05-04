@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,9 +37,9 @@ import pl.nask.hsn2.bus.operations.ObjectData;
 import pl.nask.hsn2.bus.operations.Reference;
 import pl.nask.hsn2.bus.operations.builder.ObjectDataBuilder;
 
-public class CachingObjectStoreImpl implements ObjectStore {
+public final class CachingObjectStoreImpl implements ObjectStore {
 	
-    private final static Logger LOG = LoggerFactory.getLogger(CachingObjectStoreImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CachingObjectStoreImpl.class);
 
     Map<Long, Map<String, Object>> cache = new HashMap<Long, Map<String,Object>>();
 

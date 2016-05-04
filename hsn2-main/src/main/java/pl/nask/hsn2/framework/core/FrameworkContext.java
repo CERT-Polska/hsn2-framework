@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,10 +25,12 @@ import java.net.URISyntaxException;
 import pl.nask.hsn2.framework.configuration.Configuration;
 import pl.nask.hsn2.framework.configuration.ConfigurationManager;
 
-// TODO: work in progress
-public class FrameworkContext {
+public final class FrameworkContext {
+	
     private static ConfigurationManager configurationManager;
 
+    private FrameworkContext() {}
+    
     public static Configuration getCurrentConfig() {
         assertNotNull(configurationManager, "ConfigurationManager");
         return configurationManager.getCurrentConfig();
@@ -49,7 +51,7 @@ public class FrameworkContext {
             throw new IllegalStateException("FrameworkContext not initialized properly: " + objName + " not registered");
     }
 
-    static void clean() {
+    public static void clean() {
         configurationManager = null;
     }
 

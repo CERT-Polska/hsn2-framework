@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.apache.commons.daemon.DaemonController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,7 @@ import pl.nask.hsn2.framework.configuration.ConfigurationManager;
 import pl.nask.hsn2.framework.configuration.ConfigurationManagerImpl;
 import pl.nask.hsn2.framework.configuration.MappingException;
 import pl.nask.hsn2.framework.configuration.validation.ValidationException;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.repository.GitWorkflowRepository;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
 import pl.nask.hsn2.utils.FileIdGenerator;
@@ -51,7 +55,7 @@ import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
 /**
  * Main class for the HSN2 Framework.
  */
-public class Main {
+public class Main implements Daemon {
 
     private static Main instance;
     private Logger logger;
@@ -60,75 +64,29 @@ public class Main {
     private RecoveryMonitor recoveryMonitor;
     private RbtFrameworkBus rbtBus;
 
-	public static void main(String[] args) throws InterruptedException, ConfigurationException {
-	    synchronized (Main.class) {
-	    	parseCommandLineOptions(args);
-	    	if (instance != null) {
-	            // restart
-	            instance.stop();
-	        }
-	        instance = new Main();
-	        
-	        try {
-	        	// shutdown hook added
-		        Runtime.getRuntime().addShutdownHook(new Thread(){
-		        	@Override
-		        	public void run() {
-		        		instance.stop();
-		        	}
-		        });
-		        
-		        instance.start(args);
+	public static void main(final String[] args) throws Exception {
 
-		        Thread.currentThread().join();
-	        } catch (BusException e) {
-	        	instance.logger.error("Framework cannot attach to the bus. Is Rabbit MQ working?");
-	        	instance.stop();
-	        	System.exit(1);
-	        } catch (Throwable tw) {
-	        	instance.logger.error("Cought: ", tw);
-	        	instance.stop();
-	        	System.exit(1);
-	        }
-	    }
+		
+		Main worker = new Main();
+		worker.init(new DaemonContext() {
+			
+			@Override
+			public DaemonController getController() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public String[] getArguments() {
+				return args;
+			}
+		});
+		worker.start();
+		Thread.currentThread().join();
+		worker.stop();
+		worker.destroy();
 	}
 
-	private void start(String[] args) throws ConfigurationException, BusException {
-        initLogging();
-        initConfiguration();
-        initBus();
-        initWorkflowManager();
-        // should not start BUS until all other components are initialized
-        startBus();
-        logger.info("Framework started.");
-    }
-
-	/**
-	 * Stops the framework
-	 * @throws InterruptedException
-	 */
-	private void stop() {
-
-		logger.debug("Stopping framework...");
-
-		try {
-	    	// stopping recovery monitor
-	    	if (recoveryMonitor != null) {
-		    	recoveryMonitor.stop();
-		    	recoveryMonitor = null;
-		    }
-	
-	    	// stopping the bus
-		    if (rbtBus != null) {
-		    	rbtBus.stop();
-		    	rbtBus = null;
-		    }
-		} catch (Exception e) {
-			logger.error("There are problems with shutdown the framework, ignoring.", e);
-		}
-
-    	logger.info("Framework stopped.");
-	}
 
     private void initWorkflowManager() throws ConfigurationException {
         Configuration configuration = configManager.getCurrentConfig();
@@ -136,7 +94,7 @@ public class Main {
         try {
             repo = new GitWorkflowRepository(configuration.getWorkflowRepositoryPath(), true);
         } catch (WorkflowRepoException e) {
-            throw new ConfigurationException("Something is wrong with workflow repository. Is the path valid? : " + configuration.getWorkflowRepositoryPath(), e);
+            throw new ConfigurationException("Something is wrong with workflow repository at:'" + configuration.getWorkflowRepositoryPath()+"':"+e.getMessage(),e);
         }
     	WorkflowManager.setWorkflowDefinitionManager(new ActivitiWorkflowDefinitionManager());
         WorkflowManager.setKnownServiceNames(configuration.getAMQPServicesNames());
@@ -152,7 +110,11 @@ public class Main {
 							+ configuration.getJobSequenceFile()
 							+ " or change configuration key 'jobs.sequence.file' to point on correct file.");
         }
-        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(idGenerator);
+        
+        // ONLY ONE SUPPRESSOR INSTANCE SHOULD BE USED HERE
+        SingleThreadTasksSuppressor suppressor = new SingleThreadTasksSuppressor(configuration.getJobsSuppressorEnabled());
+        
+        ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(idGenerator, suppressor, configuration.getJobsSuppressorBufferSize());
         WorkflowManager.setWorkflowEngine(engine);
 
         // sets limits
@@ -227,7 +189,8 @@ public class Main {
 	    	.setOsHiQueueName(cfg.getAMQPObjectStoreQueueHigh())
 	    	.setAmqpExchangeCommonName(cfg.getAMQPExchangeCommon())
 	    	.setAmqpExchangeMonitoringName(cfg.getAMQPExchangeMonitoring())
-	    	.setAmqpExchangeServicesName(cfg.getAMQPExchangeServices());
+	    	.setAmqpExchangeServicesName(cfg.getAMQPExchangeServices())
+	    	.setAmqpConsumersNumber(cfg.getAMQPConsumersNumber());
 
 
 	    rbtBus = new RbtFrameworkBus(busConfig);
@@ -246,17 +209,95 @@ public class Main {
 	}
 
 	private void initLogging() {
-	    if(commandLineParams.hasOption("logfile")){
-	        LoggerManager.changeLog4jProperty("log4j.appender.PRIMARY.file", commandLineParams.getOptionValue("logfile"));
+	    if(commandLineParams.hasOption("logFile")){
+	        LoggerManager.changeLog4jProperty("log4j.appender.PRIMARY.file", commandLineParams.getOptionValue("logFile"));
 	    }
-	    if(commandLineParams.hasOption("debuglevel")){
-	        LoggerManager.changeLogLevel(commandLineParams.getOptionValue("debuglevel"));
+	    if(commandLineParams.hasOption("logLevel")){
+	        LoggerManager.changeLogLevel(commandLineParams.getOptionValue("logLevel"));
 	    }
 	    logger = LoggerFactory.getLogger(Main.class);
 	}
 
-    public static void stopFramework() throws InterruptedException {
-        if (instance != null)
-            instance.stop();
+
+    @Override
+    public void init(DaemonContext context) throws Exception {
+    	synchronized (this) {
+    		parseCommandLineOptions(context.getArguments());
+    		if (instance != null) {
+    			// restart
+    			instance.stop();
+    		}
+    		instance = this;
+    		try {
+    			// shutdown hook added
+    			Runtime.getRuntime().addShutdownHook(new Thread(){
+    				@Override
+    				public void run() {
+    					try {
+    						instance.stop();
+    					} catch (Exception e) {
+    						System.exit(0);
+    					}
+    				}
+    			});  
+
+    			initLogging();
+    			initConfiguration();
+    			initBus();
+    			initWorkflowManager();
+    		} catch (BusException e) {
+    			instance.logger.error("Framework cannot attach to the bus. Is Rabbit MQ working?");
+    			instance.stop();
+    			System.exit(1);
+    		} catch (ConfigurationException e) {
+    			instance.logger.error("Configuration Error:",e);
+    			instance.stop();
+    			System.exit(1);
+    		} catch (Throwable tw) {
+    			instance.logger.error("Cought: ", tw);
+    			instance.stop();
+    			System.exit(1);
+    		}
+    	}
+
     }
+
+	@Override
+	public void start() throws Exception {
+		synchronized (this) {
+			startBus();
+			logger.info("Framework started.");
+		}
+
+	}
+
+	@Override
+	public void stop() throws Exception {
+		logger.debug("Stopping framework...");
+
+		try {
+	    	// stopping recovery monitor
+	    	if (recoveryMonitor != null) {
+		    	recoveryMonitor.stop();
+		    	recoveryMonitor = null;
+		    }
+	
+	    	// stopping the bus
+		    if (rbtBus != null) {
+		    	rbtBus.stop();
+		    	rbtBus = null;
+		    }
+		} catch (Exception e) {
+			logger.error("There are problems with shutdown the framework, ignoring.", e);
+		}
+
+    	logger.info("Framework stopped.");
+		
+	}
+
+	@Override
+	public void destroy() {
+		logger.info("Framework stopped.");
+		
+	}
 }

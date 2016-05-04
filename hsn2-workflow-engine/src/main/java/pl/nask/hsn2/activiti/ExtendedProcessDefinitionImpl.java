@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,11 @@ package pl.nask.hsn2.activiti;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.pvm.runtime.InterpretableExecution;
 
-public class ExtendedProcessDefinitionImpl extends ProcessDefinitionImpl {
-    private static final long serialVersionUID = 1L;
+public final class ExtendedProcessDefinitionImpl extends ProcessDefinitionImpl {
 
-    public ExtendedProcessDefinitionImpl(String id) {
+	private static final long serialVersionUID = -4379632538976342137L;
+
+	public ExtendedProcessDefinitionImpl(String id) {
         super(id);
     }
 

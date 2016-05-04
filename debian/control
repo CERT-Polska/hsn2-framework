@@ -1,8 +1,12 @@
-Package: hsn2-framework
-Version: {VER}
-Section: unknown
+Source: hsn2-framework
+Section: java
 Priority: optional
+Maintainer: CERT Polska <info@cert.pl>
+Build-Depends: debhelper (>= 8.0.0), maven
+Standards-Version: 3.9.3
+
+Package: hsn2-framework
 Architecture: all
-Maintainer: Juliusz Brzostek (juliusz.brzostek@cert.pl)
+Depends: ${misc:Depends}, hsn2-commons-debian, java-wrappers, openjdk-7-jre, jsvc, rabbitmq-server, git
+Homepage: http://www.honeyspider.net
 Description: HSN2 Framework Component.
-Distribution: {DEBIAN_DIST}

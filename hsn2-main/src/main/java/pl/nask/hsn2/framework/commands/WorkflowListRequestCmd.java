@@ -1,8 +1,8 @@
 /*
  * Copyright (c) NASK, NCSC
- * 
- * This file is part of HoneySpider Network 2.0.
- * 
+ *
+ * This file is part of HoneySpider Network 2.1.
+ *
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,8 +33,7 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
-public class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
-
+public final class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
 	@Override
 	public Operation execute(CommandContext<WorkflowListRequest> context)
 			throws CommandExecutionException {
@@ -42,14 +41,14 @@ public class WorkflowListRequestCmd implements Command<WorkflowListRequest> {
 		try {
 			List<WorkflowDescriptor> defs = WorkflowManager.getInstance()
 					.getWorkflowDefinitions(
-							context.getSourceOperation().isEnabledOnly());		
-	
+							context.getSourceOperation().isEnabledOnly());
+
 			WorkflowListReplyBuilder builder = new WorkflowListReplyBuilder();
 			for (WorkflowDescriptor descriptor : defs) {
-				
+
 				// checks is workflow is enabled by policy and if it's deployed
 				boolean enabled = WorkflowPolicyManager.isEnabledByPolicy(descriptor.getName());
-				
+
 				builder.addWorkflowBasicInfo(
 						new WorkflowBasicInfo(descriptor.getName(), enabled));
 			}

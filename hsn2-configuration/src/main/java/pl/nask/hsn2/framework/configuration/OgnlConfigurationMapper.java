@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@ package pl.nask.hsn2.framework.configuration;
 
 import java.util.Map;
 
-import ognl.DefaultMemberAccess;
-import ognl.Ognl;
-import ognl.OgnlException;
+import org.apache.commons.ognl.DefaultMemberAccess;
+import org.apache.commons.ognl.Ognl;
+import org.apache.commons.ognl.OgnlException;
 
-public class OgnlConfigurationMapper implements ConfigurationMapper {
+public final class OgnlConfigurationMapper implements ConfigurationMapper {
 
-    private final static DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess(true);
+    private static final DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess(true);
 
     private Map<String, String> mapping;
 
@@ -54,7 +54,7 @@ public class OgnlConfigurationMapper implements ConfigurationMapper {
         }
 
         try {
-            Map ctx = Ognl.createDefaultContext(configuration);
+            Map<String, Object> ctx = Ognl.createDefaultContext(configuration);
             Ognl.setMemberAccess(ctx, MEMBER_ACCESS);
             Ognl.setValue(mapped, ctx, configuration, value);
         } catch (OgnlException e) {

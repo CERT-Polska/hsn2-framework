@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 import pl.nask.hsn2.framework.workflow.repository.WorkflowRepoException;
 
-public class WorkflowPolicyRequestCmd implements Command<WorkflowPolicyRequest> {
+public final class WorkflowPolicyRequestCmd implements Command<WorkflowPolicyRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowPolicyRequest> context)

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,15 @@ package pl.nask.hsn2.framework.bus;
 
 import java.util.Arrays;
 
-public class RbtBusConfiguration {
+/**
+ * This class represents RabbitMQ Bus configuration for HSN2 Framework.
+ * 
+ */
 
+public final class RbtBusConfiguration {
+
+	private static final int DEFAULT_AMQP_CONSUMERS_NUMBER = 10;
+	
 	private String amqpServerAddress;
 
 	// Queues for framework
@@ -41,6 +48,8 @@ public class RbtBusConfiguration {
 	private String amqpExchangeMonitoringName = "notify";
 	private String amqpExchangeCommonName = "main";
 	private String amqpExchangeServicesName = "direct";
+	
+	private int amqpConsumersNumber = DEFAULT_AMQP_CONSUMERS_NUMBER;
 
 	public String getAmqpExchangeMonitoringName() {
 		return amqpExchangeMonitoringName;
@@ -116,6 +125,24 @@ public class RbtBusConfiguration {
 	public RbtBusConfiguration setOsHiQueueName(String queueName) {
 		this.osHiQueueName = queueName;
 		return this;
+	}
+
+	public RbtBusConfiguration setAmqpConsumersNumber(String consumersNumberTextValue) {
+		if (consumersNumberTextValue != null && !consumersNumberTextValue.isEmpty()) {
+			try {
+				this.amqpConsumersNumber = Integer.valueOf(consumersNumberTextValue);
+				if (this.amqpConsumersNumber < 1) {
+					throw new IllegalArgumentException("Consumers number has to be positive number");
+				}
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Consumers number has to be positive number");
+			}
+		}
+		return this;
+	}
+
+	public int getAmqpConsumersNumber() {
+		return amqpConsumersNumber;
 	}
 
 	public String getAMQPServerAddress() {

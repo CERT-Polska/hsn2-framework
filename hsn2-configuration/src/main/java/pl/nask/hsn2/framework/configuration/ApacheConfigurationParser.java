@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,26 +26,33 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.io.IOUtils;
 
-public class ApacheConfigurationParser implements ConfigurationReader<PropertiesConfiguration> {
+public final class ApacheConfigurationParser implements ConfigurationReader<PropertiesConfiguration> {
 
     @Override
-    public PropertiesConfiguration parse(String filePath) throws FileNotFoundException,
-            IOException, ConfigurationException {
+	public PropertiesConfiguration parse(String filePath) throws IOException,
+			ConfigurationException {
         File conf = new File(filePath);
-        InputStream is;
-        if (conf.exists()) {
-            is = new FileInputStream(conf);
-        } else {
-            is = getClass().getResourceAsStream("/"+filePath);
-            if (is == null)
-                throw new FileNotFoundException("classpath:" + filePath);
+        InputStream is = null;
+        try{
+	        if (conf.exists()) {
+	            is = new FileInputStream(conf);
+	        } else {
+	            is = getClass().getResourceAsStream("/"+filePath);
+	            if (is == null)
+	                throw new FileNotFoundException("classpath:" + filePath);
+	        }
+	        return parse(is);
         }
-        return parse(is);
+        finally{
+        	IOUtils.closeQuietly(is);
+        }
     }
 
     @Override
-    public PropertiesConfiguration parse(InputStream conf) throws FileNotFoundException, IOException, ConfigurationException {
+	public PropertiesConfiguration parse(InputStream conf) throws IOException,
+			ConfigurationException {
         PropertiesConfiguration pconf = new PropertiesConfiguration();
         try {
             pconf.load(conf);
@@ -54,5 +61,4 @@ public class ApacheConfigurationParser implements ConfigurationReader<Properties
         }
         return pconf;
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
  */
 package pl.nask.hsn2.workflow.engine;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,26 +29,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.nask.hsn2.activiti.IntIdGen;
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
 
-public class ProcessContext {	
-	private final static Logger LOG = LoggerFactory.getLogger(ProcessContext.class); 
+public final class ProcessContext implements Serializable {	
+
+	private static final long serialVersionUID = 4250737409132354594L;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProcessContext.class); 
 	
 	private final long jobId;
 	private final SubprocessParameters subprocessParameters;
 	private final Map<String, Properties> userConfig;
-	private final IntIdGen taskIdGenerator;
-	private final DefaultTasksStatistics stats;
+	private final transient IntIdGen taskIdGenerator;
+	private final TasksStatistics stats;
 	private final List<ExecutionWrapper> waitingForResume;
+	private transient JobSuppressorHelper jobSuppressorHelper;
 	
 	private Integer currentTaskId;
 	private int taskAccepted;
 	
-	public ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats) {
-		this(jobId, userConfig, subprocessParams, stats, new IntIdGen(), new LinkedList<ExecutionWrapper>());
+	public ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, TasksStatistics stats, JobSuppressorHelper jobSuppressorHelper) {
+		this(jobId, userConfig, subprocessParams, stats, new IntIdGen(), new LinkedList<ExecutionWrapper>(), jobSuppressorHelper);
 	}
 
-	private ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, DefaultTasksStatistics stats, IntIdGen intIdGen, List<ExecutionWrapper> waitingForResume) {
+	private ProcessContext(long jobId, Map<String, Properties> userConfig, SubprocessParameters subprocessParams, TasksStatistics stats, IntIdGen intIdGen, List<ExecutionWrapper> waitingForResume, JobSuppressorHelper jobSuppressorHelper) {
 		this.stats = stats;
 		this.jobId = jobId;
 		this.subprocessParameters = subprocessParams;
@@ -58,6 +64,7 @@ public class ProcessContext {
 		}	
 		this.taskIdGenerator = intIdGen;
 		this.waitingForResume = waitingForResume;
+		this.jobSuppressorHelper = jobSuppressorHelper;
 	}
 
 	int newTaskId() {
@@ -86,18 +93,26 @@ public class ProcessContext {
 		return waitingForResume;
 	}
 
-	public DefaultTasksStatistics getJobStats() {
+	public TasksStatistics getJobStats() {
 		return stats;
 	}
 
 	public ProcessContext subprocessContext(SubprocessParameters subprocessParams) {
-		return new ProcessContext(jobId, userConfig, subprocessParams, stats, taskIdGenerator, waitingForResume);
+		return new ProcessContext(jobId, userConfig, subprocessParams, stats, taskIdGenerator, waitingForResume, jobSuppressorHelper);
 	}
 
 	public void markTaskAsAccepted() {
 		this.taskAccepted ++;
 		if (taskAccepted > 1) {
-			LOG.warn("got {} TaskAccepted messages for jobid={}, taskId={}", new Object[]{taskAccepted, jobId, currentTaskId});
+			LOGGER.warn("got {} TaskAccepted messages for jobid={}, taskId={}", new Object[]{taskAccepted, jobId, currentTaskId});
 		}
+	}
+
+	public JobSuppressorHelper getJobSuppressorHelper() {
+		return jobSuppressorHelper;
+	}
+	
+	public void removeJobSuppressorHelper() {
+		jobSuppressorHelper = null;
 	}
 }

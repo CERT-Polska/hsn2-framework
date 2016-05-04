@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 package pl.nask.hsn2.framework.configuration.validation;
 
-public class ValidationException extends Exception {
+public final class ValidationException extends Exception {
 
     private static final long serialVersionUID = 8856607005580647402L;
 

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:               hsn2-framework
+# Required-Start:
+# Required-Stop:
+# Default-Start:          2 3 4 5
+# Default-Stop:           0 1 6
+# Short-Description:      Start/Stop the HSN2 Framework
+# Description:            Start/Stop the HSN2 Framework daemon.
+### END INIT INFO
+
+NAME="HSN2 Framework"
+HSN2_COMPONENT="framework"
+MAINCLASS="pl.nask.hsn2.framework.core.Main"
+CONFFILE=/etc/hsn2/framework.conf
+
+#HSN2_JMX_PORT=1100
+HSN2_JVM_PARAMS_MEMORY=-Xmx1500m
+
+. /lib/hsn2/init-functions-java
+
+load_config() {
+	. /etc/hsn2/common.conf
+	#LOG_LEVEL=DEBUG
+}
+
+prepare_start() {
+	HSN2_COMPONENT_PARAMS="-configPath /etc/hsn2/$HSN2_COMPONENT.conf -logLevel $LOG_LEVEL"
+}
+	
+choose_java_service_action $@
+
+exit $?

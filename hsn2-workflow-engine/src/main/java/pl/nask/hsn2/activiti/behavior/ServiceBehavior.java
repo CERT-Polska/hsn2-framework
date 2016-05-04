@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,29 +30,31 @@ import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.connector.process.ProcessConnectorException;
 import pl.nask.hsn2.bus.operations.TaskErrorReasonType;
 import pl.nask.hsn2.expressions.EvaluationException;
 import pl.nask.hsn2.expressions.ExpressionResolver;
-import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.JobSuppressorHelper;
 import pl.nask.hsn2.framework.workflow.engine.ProcessDefinitionRegistry;
 import pl.nask.hsn2.framework.workflow.hwl.Output;
 import pl.nask.hsn2.framework.workflow.hwl.ServiceParam;
-import pl.nask.hsn2.framework.workflow.job.DefaultTasksStatistics;
+import pl.nask.hsn2.framework.workflow.job.TasksStatistics;
+import pl.nask.hsn2.suppressor.JobSuppressorUtils;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 import pl.nask.hsn2.workflow.engine.SubprocessParameters;
 
-public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServiceBehavior.class);
-    private final String serviceName;
+public final class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSNBehavior {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ServiceBehavior.class);
+
+	private final String serviceName;
     private final String serviceLabel;
     private final Properties serviceParameters;
     private final List<Output> outputs;
     private final ExpressionResolver expressionResolver;
     private ProcessDefinitionRegistry<PvmProcessDefinition> definitionRegistry;
 	private List<TaskErrorReasonType> errorsIgnored;
-    
+
     public ServiceBehavior(String serviceName, String serviceLabel, Properties parameters, List<Output> outputs, ExpressionResolver resolver, ProcessDefinitionRegistry<PvmProcessDefinition> definitionRegistry,List<TaskErrorReasonType> ignoreErrors) {
         this.serviceName = serviceName;
         this.serviceLabel = serviceLabel;
@@ -60,52 +62,52 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         this.outputs = outputs;
         this.expressionResolver = resolver;
         this.definitionRegistry = definitionRegistry;
-        if(ignoreErrors !=null)
+        if(ignoreErrors !=null) {
         	this.errorsIgnored = ignoreErrors;
-        else
+        } else {
         	this.errorsIgnored = new ArrayList<TaskErrorReasonType>();
+        }
     }
 
     @Override
-    public void execute(ActivityExecution execution) {
-        LOGGER.debug("Executing activity {}", execution.getActivity().getId());
-        LOGGER.debug("Send a message to a service with name {}", serviceName);
-        ExecutionWrapper wrapper = new ExecutionWrapper(execution);
+	public void execute(ActivityExecution execution) {
+		LOGGER.debug("Executing activity {}", execution.getActivity().getId());
+		ExecutionWrapper wrapper = new ExecutionWrapper(execution);
 
-        Long jobId = wrapper.getJobId();
-        if (jobId == null) {
-            throw new IllegalStateException("No job_id found for the execution: " + execution);
-        }
-
-        int taskId = wrapper.setNewTaskId();
-
-        // FIXME: we have a race here! WorkflowJob instances should be synchronized.
-
-        // TODO: refactor me!
-        try {
-			Properties params = ServiceParam.merge(
-					serviceParameters,
-					wrapper.getUserConfig().get(serviceLabel),
-					true);
-        	SubprocessParameters processParams = wrapper.getSubprocessParameters();
-        	long objectId = (processParams!=null) ? processParams.getObjectDataId() : 0L;
-			((FrameworkBus)BusManager.getBus()).getProcessConnector().sendTaskRequest(serviceName, serviceLabel, jobId,
-					taskId, objectId, params);
-        } catch (ProcessConnectorException e) {
-            LOGGER.error(e.getMessage(), e);
-            System.exit(1); //TODO: doggy! fix it ASAP! Maybe internal TaskError operation?
+		Long jobId = wrapper.getJobId();
+		if (jobId == null) {
+			throw new IllegalStateException("No job_id found for the execution: " + execution);
 		}
-        DefaultTasksStatistics stats = wrapper.getJobStats();
-        if (stats != null) {
-            stats.taskStarted(serviceName);
-        }
-        LOGGER.debug("message sent to a service with name {}", serviceName);
-    }
+
+		int taskId = wrapper.setNewTaskId();
+		Properties params = ServiceParam.merge(serviceParameters, wrapper.getUserConfig().get(serviceLabel), true);
+		SubprocessParameters processParams = wrapper.getSubprocessParameters();
+		long objectDataId = (processParams != null) ? processParams.getObjectDataId() : 0L;
+		TasksStatistics stats = wrapper.getJobStats();
+
+		JobSuppressorHelper jobSuppressorHelper = wrapper.getProcessContext().getJobSuppressorHelper();
+		if (jobSuppressorHelper == null) {
+			// Suppressor is disabled.
+			try {
+				JobSuppressorUtils.sendTaskRequest(jobId, stats, serviceName, serviceLabel, taskId, objectDataId, params);
+			} catch (ProcessConnectorException e) {
+				LOGGER.error(e.getMessage(), e);
+				throw new FatalTaskErrorException("Non-ignored task error: ", e);
+			}
+		} else {
+			// Suppressor is enabled.
+			wrapper.getProcessContext().getJobSuppressorHelper()
+					.addTaskRequest(serviceName, serviceLabel, taskId, objectDataId, params, stats);
+		}
+	}
 
     @Override
     public void signal(ActivityExecution execution, String signalName, Object signalData) throws EvaluationException {
         // TODO: inactive executions should not process the signal. the signal should be passed to the subprocess instead.
         // TODO: all signals should be passed to subexecutions?
+    	
+    	ExecutionWrapper wrapper = new ExecutionWrapper(execution);
+    	JobSuppressorHelper jobSuppressorHelper = wrapper.getProcessContext().getJobSuppressorHelper();
     	
         LOGGER.debug("activity: {}", execution.getActivity().getId());
         LOGGER.debug("got signal: {} with data: {}", signalName, signalData);
@@ -114,10 +116,18 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         }
         if ("completeTask".equalsIgnoreCase(signalName)) {
             completeTask(execution, signalData);
+            if (jobSuppressorHelper != null) {
+            	// Suppressor is enabled.
+            	jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId(), wrapper.getJobStats());
+            }
         } else if ("subprocess".equalsIgnoreCase(signalName)) {
             runSubprocesses(execution, signalData);
         } else if ("taskFailed".equalsIgnoreCase(signalName)) {
         	handleTaskFailed(execution,(Object [])signalData);
+            if (jobSuppressorHelper != null) {
+            	// Suppressor is enabled.
+            	jobSuppressorHelper.signalTaskCompletion(wrapper.getJobId(), wrapper.getTaskId(), wrapper.getJobStats());
+            }
         } else {
             LOGGER.debug("Unknown signal name, ignore: {}",signalName);
         }
@@ -133,7 +143,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
     	else {
     		LOGGER.info("Ignoring TaskError:[reqId={},descr={}]",reqId,errorDescription);
     		ExecutionWrapper wrapper = new ExecutionWrapper(execution);
-    		DefaultTasksStatistics stats = wrapper.getJobStats();
+    		TasksStatistics stats = wrapper.getJobStats();
     		if (stats != null) {
     			stats.taskCompleted(serviceName);
     		}
@@ -184,7 +194,7 @@ public class ServiceBehavior extends AbstractBpmnActivityBehavior implements HSN
         LOGGER.debug("TaskCompleted");
 
         ExecutionWrapper wrapper = new ExecutionWrapper(execution);
-        DefaultTasksStatistics stats = wrapper.getJobStats();
+        TasksStatistics stats = wrapper.getJobStats();
         if (stats != null) {
             stats.taskCompleted(serviceName);
         }

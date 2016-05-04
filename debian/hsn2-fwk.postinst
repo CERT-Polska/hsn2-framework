@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-
-# create initial jobs sequence file in default location
-#
-if [ ! -f /opt/hsn2/framework/jobId.seq ]; then
-	echo -n "0" > /opt/hsn2/framework/jobId.seq
-fi

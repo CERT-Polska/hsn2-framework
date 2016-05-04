@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import pl.nask.hsn2.activiti.BehaviorFactory;
 import pl.nask.hsn2.activiti.BehaviorFactoryImpl;
 import pl.nask.hsn2.bus.api.BusManager;
 import pl.nask.hsn2.bus.operations.JobStatus;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
 import pl.nask.hsn2.framework.workflow.engine.ProcessBasedWorkflowDescriptor;
 import pl.nask.hsn2.framework.workflow.hwl.Conditional;
 import pl.nask.hsn2.framework.workflow.hwl.ExecutionFlow;
@@ -42,7 +43,7 @@ import pl.nask.hsn2.utils.AtomicLongIdGenerator;
 import pl.nask.hsn2.workflow.engine.ActivitiWorkflowEngine;
 
 public class TestWorkflowWithInvalidExpression {
-	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator());
+	private ActivitiWorkflowEngine engine = new ActivitiWorkflowEngine(new AtomicLongIdGenerator(), new SingleThreadTasksSuppressor(true), 1);
 	private BehaviorFactory behaviorFactory;
 	/**
 	 * Test for bug #6674. Workflow tested:

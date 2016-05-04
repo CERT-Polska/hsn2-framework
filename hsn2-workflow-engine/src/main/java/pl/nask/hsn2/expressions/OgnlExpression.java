@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,9 @@ import pl.nask.hsn2.os.OgnlRootObject;
  *
  *
  */
-public class OgnlExpression {
-    private Object expression;
+public final class OgnlExpression {
+
+	private Object expression;
 
     public OgnlExpression( String expressionString )
         throws OgnlException

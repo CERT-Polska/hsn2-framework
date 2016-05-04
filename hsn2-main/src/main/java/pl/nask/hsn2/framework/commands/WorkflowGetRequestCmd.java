@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import pl.nask.hsn2.bus.operations.builder.WorkflowErrorBuilder;
 import pl.nask.hsn2.bus.operations.builder.WorkflowGetReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class WorkflowGetRequestCmd implements Command<WorkflowGetRequest> {
+public final class WorkflowGetRequestCmd implements Command<WorkflowGetRequest> {
 
 	@Override
 	public Operation execute(CommandContext<WorkflowGetRequest> context)

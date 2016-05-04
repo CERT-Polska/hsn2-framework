@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  */
 
 package pl.nask.hsn2.framework.workflow.engine;
+
+import java.io.Serializable;
 
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
@@ -42,7 +44,7 @@ import pl.nask.hsn2.framework.workflow.hwl.Workflow;
  * 
  *
  */
-public interface WorkflowDescriptor {
+public interface WorkflowDescriptor extends Serializable {
 
 	/**
 	 * Gets identifier of the descriptor.

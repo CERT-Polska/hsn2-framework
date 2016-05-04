@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import pl.nask.hsn2.bus.operations.builder.JobListReplyBuilder;
 import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.job.WorkflowJobInfo;
 
-public class JobListRequestCmd implements Command<JobListRequest> {
+public final class JobListRequestCmd implements Command<JobListRequest> {
 
 	@Override
 	public Operation execute(CommandContext<JobListRequest> context)

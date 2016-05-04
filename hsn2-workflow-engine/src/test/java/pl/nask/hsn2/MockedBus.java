@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 
 package pl.nask.hsn2;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ import pl.nask.hsn2.framework.bus.FrameworkBus;
 public class MockedBus implements FrameworkBus {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MockedBus.class);
 	
-	public List<TaskRequest> requests = new ArrayList<TaskRequest>();
+	public BlockingQueue<TaskRequest> requests = new ArrayBlockingQueue<TaskRequest>(1000);
 
 	private Map<Long, ObjectData> objects = new HashMap<Long, ObjectData>();		
 	
@@ -105,5 +105,16 @@ public class MockedBus implements FrameworkBus {
 
 	@Override
 	public void jobFinished(long jobId, JobStatus status) {
+	}
+
+	@Override
+	public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
+	}
+
+	@Override
+	public void releaseResources() {
+		// TODO Auto-generated method stub
+		throw new IllegalStateException("Not implemented!.");
+		
 	}
 }

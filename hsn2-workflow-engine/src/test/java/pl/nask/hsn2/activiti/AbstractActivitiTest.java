@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,8 @@ import pl.nask.hsn2.bus.connector.process.ProcessConnector;
 import pl.nask.hsn2.bus.connector.process.StubProcessConnector;
 import pl.nask.hsn2.bus.operations.JobStatus;
 import pl.nask.hsn2.framework.bus.FrameworkBus;
+import pl.nask.hsn2.framework.suppressor.SingleThreadTasksSuppressor;
+import pl.nask.hsn2.suppressor.JobSuppressorHelperImpl;
 import pl.nask.hsn2.workflow.engine.ExecutionWrapper;
 
 public class AbstractActivitiTest {
@@ -67,7 +69,8 @@ public class AbstractActivitiTest {
     			@Override public boolean isRunning() { return true; }
     			@Override public void jobStarted(long jobId) { }
     			@Override public void jobFinished(long jobId, JobStatus status) { }
-
+				@Override public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {}
+				@Override public void releaseResources() {}
     		});
     		pvmFactory = new PvmProcessFactory();
     	}
@@ -137,7 +140,7 @@ public class AbstractActivitiTest {
         for (int i=0; i<5000; i++) {
             PvmProcessInstance instance = def.createProcessInstance();
             ExecutionWrapper wrapper = new ExecutionWrapper(instance);
-            wrapper.initProcessState(i);
+            wrapper.initProcessState(i, new JobSuppressorHelperImpl(1L, 100, new SingleThreadTasksSuppressor(true)));
             setVariables(instance, variables);
             instances.add(instance);
         }

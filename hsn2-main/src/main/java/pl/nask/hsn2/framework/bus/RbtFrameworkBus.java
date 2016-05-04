@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 package pl.nask.hsn2.framework.bus;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,14 +54,16 @@ import pl.nask.hsn2.bus.rabbitmq.endpoint.RbtEndPointFactory;
 import pl.nask.hsn2.bus.recovery.Recoverable;
 import pl.nask.hsn2.bus.serializer.MessageSerializer;
 import pl.nask.hsn2.bus.serializer.protobuf.ProtoBufMessageSerializer;
+import pl.nask.hsn2.framework.core.WorkflowManager;
 
-public class RbtFrameworkBus implements FrameworkBus, Recoverable {
+public final class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RbtFrameworkBus.class);
 
 	private static final String SERVICE_QUEUE_PERFIX = "srv-";
 	private static final String SERVICE_LOW_PRIORITY_SUFFIX = ":l";
 	private static final String SERVICE_HIGH_PRIORITY_SUFFIX = ":h";
+	private static final long ONE_MINUTE = 60 * 1000;
 	
 	private static final MessageSerializer<Operation> DEFAULT_SERIALIZER = new ProtoBufMessageSerializer();
 	private static final CommandDispatcher DEFAULT_COMMAND_DISPATCHER = new DefaultCommandDispatcher(
@@ -83,7 +87,9 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 	
 	private boolean running = false;
 	private final Object mutex;
-	
+
+	private final List<JobReminderData> jobReminders = Collections.synchronizedList(new ArrayList<JobReminderData>());
+
 	/**
 	 * Default constructor.
 	 * 
@@ -93,22 +99,22 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 		this.config = config;
 		this.endPointFactory = new RbtEndPointFactory();
 		this.mutex = this;
-		setup();
+		setup(true);
 	}
 
-	private void setup() throws BusException {
-		
+	private void setup(boolean purgeQueues) throws BusException {
 		this.endPointFactory
-			.setNumberOfconsumerThreads(10)
+			.setNumberOfconsumerThreads(config.getAmqpConsumersNumber())
 			.setServerAddress(config.getAMQPServerAddress())
 			.reconnect();
-		
+
 		List<String> queues = new LinkedList<String>();
-		
+
 		// Declarations of exchanges and bindings between them
 		String exchangeMonitoringName = config.getAmqpExchangeMonitoringName();
 		String exchangeCommonName = config.getAmqpExchangeCommonName();
 		String exchangeServicesName = config.getAmqpExchangeServicesName();
+		LOGGER.info("Creating exchanges:{}",new Object[]{exchangeCommonName,exchangeMonitoringName,exchangeServicesName});
 		RbtUtils.createExchanges(endPointFactory.getConnection(), exchangeCommonName, exchangeServicesName, exchangeMonitoringName);
 
 		// services queues
@@ -127,11 +133,11 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 		// deadletter queue
 		queues.add("deadletter");
-		
-		LOGGER.debug("Creating queues: {}", queues);
-		RbtUtils.createQueues(endPointFactory.getConnection(), exchangeServicesName, queues.toArray(new String[queues.size()]), true);
+
+		LOGGER.info("Creating queues ({}): {}", purgeQueues?"purging":"queues data preserved", queues);
+		RbtUtils.createQueues(endPointFactory.getConnection(), exchangeServicesName, queues.toArray(new String[queues.size()]), purgeQueues);
 	}
-	
+
 	@Override
 	public void start() throws BusException {
 		
@@ -202,7 +208,16 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 			} catch (BusException e) {
 				// problem with closing connection, ignoring
 			}
+			objectStoreConnector.releaseResources();
+			objectStoreConnector = null;
+			
+			servicesConnector.releaseResources();
+			servicesConnector = null;
+			
+			jobEventsNotifier.releaseResources();
+			jobEventsNotifier = null;
 			running = false;
+			
 		}
 	}
 
@@ -213,11 +228,18 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 
 	@Override
 	public void recovery() {
+		boolean recover = false;
 		try {
 			if (!endPointFactory.isConnectionValid()) {
-				LOGGER.info("Bus problem occured, trying to recover...");
 				stop();
-				setup();
+				if (!recover) {			
+					LOGGER.error("Connection failure. Cannot reliable recover.");
+					LOGGER.error("Unfinished jobs:{}.shutting down.",WorkflowManager.getInstance().getWorkflowJobs()) ;
+					System.exit(1);
+				} else {
+					LOGGER.info("Bus problem occured, trying to recover...");
+				}
+				setup(false);
 				start();
 			}
 		} catch(BusException ex) {
@@ -263,6 +285,7 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 					DEFAULT_SERIALIZER, endPointFactory,
 					new RbtDestination(config.getAmqpExchangeMonitoringName(), ""));
 		}
+		LOGGER.info("Initialized outgoing connectors:\n\t{},\n\t{},\n\t{}",new Object[]{servicesConnector,objectStoreConnector,jobEventsNotifier});
 	}
 
 	private Map<String, RbtDestination> getServicesDestinations(String exchange, String[] serviceNames, String prefix, String suffix) {
@@ -274,4 +297,51 @@ public class RbtFrameworkBus implements FrameworkBus, Recoverable {
 		}
 		return servicesDestinations;
 	}
+
+	@Override
+	public void jobFinishedReminder(long jobId, JobStatus status, int offendingTask) {
+		if (jobEventsNotifier == null) {
+			LOGGER.debug("Job events notifier not enabled, will not inform. (jobId={}, taskId={})", jobId, offendingTask);
+			return;
+		}
+
+		synchronized (jobReminders) {
+			// Cut off old reminders.
+			long now = System.currentTimeMillis();
+			int index = Collections.binarySearch(jobReminders, now - ONE_MINUTE);
+			if (index < 0) {
+				index = -index - 1;
+			} else {
+				index++;
+			}
+			jobReminders.subList(0, index).clear();
+
+			// Now only reminders from last minute left. Search for job id.
+			JobReminderData reminderFound = null;
+			for (JobReminderData tempReminder : jobReminders) {
+				if (tempReminder.getJobId() == jobId) {
+					reminderFound = tempReminder;
+					break;
+				}
+			}
+
+			// Proceed with reminder sending if needed.
+			if (reminderFound == null) {
+				// Reminder not found, sending new one.
+				jobReminders.add(new JobReminderData(jobId, now));
+				LOGGER.debug("Reminder not found, sending new one. (jobId={}, taskId={})", jobId, offendingTask);
+				jobEventsNotifier.jobFinishedReminder(jobId, status, offendingTask);
+			} else {
+				// Reminder found, ignore current one.
+				LOGGER.debug("Reminder found, ignore current one. (jobId={}, taskId={})", jobId, offendingTask);
+			}
+		}
+	}
+
+	@Override
+	public void releaseResources() {
+		stop();
+		
+	}
+
 }

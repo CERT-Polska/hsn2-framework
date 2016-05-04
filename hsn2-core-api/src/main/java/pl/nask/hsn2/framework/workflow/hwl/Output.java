@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package pl.nask.hsn2.framework.workflow.hwl;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
-public class Output {
+public final class Output {
 
     @XmlAttribute(required=true, name="process")
     private String processName;
@@ -41,11 +41,11 @@ public class Output {
         this.expression = expression;
     }
 
-    public final String getProcessName() {
+    public String getProcessName() {
         return processName;
     }
 
-    public final String getExpression() {
+    public String getExpression() {
         return expression;
     }
     

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,8 +58,9 @@ import pl.nask.hsn2.framework.workflow.hwl.Service;
 import pl.nask.hsn2.framework.workflow.hwl.Wait;
 import pl.nask.hsn2.framework.workflow.hwl.Workflow;
 
-public class HWLParser implements WorkflowParser {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HWLParser.class);
+public final class HWLParser implements WorkflowParser {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HWLParser.class);
 
     private JAXBContext ctx;
     private Schema schema;

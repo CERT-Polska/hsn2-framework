@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,9 @@ import pl.nask.hsn2.framework.core.WorkflowManager;
 import pl.nask.hsn2.framework.workflow.engine.WorkflowNotDeployedException;
 import pl.nask.hsn2.framework.workflow.policy.WorkflowPolicyManager;
 
-public class JobDescriptorCmd implements Command<JobDescriptor> {
+public final class JobDescriptorCmd implements Command<JobDescriptor> {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(JobDescriptorCmd.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobDescriptorCmd.class);
 	
 	private static final String ERROR_JOBS_LIMIT = "Maximum running jobs limit exceeded.";
 	private static final String ERROR_WORKFLOW_NOT_DEPLOYED = "Workflow not deployed: ";

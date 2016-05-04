@@ -1,7 +1,7 @@
 /*
  * Copyright (c) NASK, NCSC
  * 
- * This file is part of HoneySpider Network 2.0.
+ * This file is part of HoneySpider Network 2.1.
  * 
  * This is a free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,9 @@ package pl.nask.hsn2.framework.workflow.repository;
 
 import org.eclipse.jgit.revwalk.RevCommit;
 
-public class GitVersionInfo implements WorkflowVersionInfo {
-    private final int time;
+public final class GitVersionInfo implements WorkflowVersionInfo {
+
+	private final int time;
     private final String version;
 
     public GitVersionInfo(RevCommit commit) {

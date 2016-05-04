@@ -1,0 +1,5 @@
+Template: hsn2-framework/broker
+Type: string
+Default: localhost
+Description: Broker hostname or ip
+ Part of HSN2 Framework service configuration.
